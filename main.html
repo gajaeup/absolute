@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <title>디버그: 폐·휴업 주유소 클러스터 지도</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #map {
+            width: 100%;
+            height: 1440px;
+        }
+    </style>
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Kakao (clusterer 포함) -->
+    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=65e1c8f1ab7fa043334d2b12c4bde905&libraries=clusterer"></script>
+</head>
+
+<body>
+    <div id="map"></div>
+
+    <script>
+        kakao.maps.load(function () {
+
+            const map = new kakao.maps.Map(document.getElementById('map'), {
+                center: new kakao.maps.LatLng(36.5, 127.8),
+                level: 12
+            });
+
+
+
+            const clusterer = new kakao.maps.MarkerClusterer({
+                map: map,
+                averageCenter: true,
+                minLevel: 7,
+                disableClickZoom: false
+            });
+
+            const CSV_FILE = "산업통상자원부_폐휴업주유소_좌표추가_kakao.csv";
+
+            Papa.parse(CSV_FILE, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function (results) {
+                    if (results.errors && results.errors.length) {
+                        console.warn(results.errors);
+                    }
+
+                    const data = results.data;
+
+                    if (!data || data.length === 0) {
+                        return;
+                    }
+
+                    // 헤더 출력(디버그)
+                    const headers = results.meta.fields || Object.keys(data[0]);
+                    console.log('CSV 헤더: ' + JSON.stringify(headers));
+
+                    // 컬럼 자동 감지 (이전 함수과 동일)
+                    function findColumnName(headers, candidates) {
+                        for (const c of candidates) {
+                            const idx = headers.findIndex(h => h && h.toString().trim().toLowerCase() === c.toLowerCase());
+                            if (idx !== -1) return headers[idx];
+                        }
+                        for (const h of headers) {
+                            if (!h) continue;
+                            const s = h.toString().toLowerCase();
+                            for (const c of candidates) {
+                                if (s.includes(c.toLowerCase())) return h;
+                            }
+                        }
+                        return null;
+                    }
+
+                    const statusCol = findColumnName(headers, ["상태", "status", "상태코드", "구분"]);
+                    const nameCol = findColumnName(headers, ["업체명"]);
+                    const addrCol = findColumnName(headers, ["주소", "소재지", "소재지지번", "주소지"]);
+                    const latCol = findColumnName(headers, ["위도", "lat", "y"]);
+                    const lngCol = findColumnName(headers, ["경도", "lng", "lon", "x", "long"]);
+
+                    if (!latCol || !lngCol) {
+                        console.log('위도/경도 컬럼을 찾을 수 없습니다. CSV 헤더 이름을 확인하세요.');
+                        return;
+                    }
+
+
+
+                    const markers = [];
+                    let shown = 0;
+                    data.forEach((row, idx) => {
+                        const status = statusCol ? (row[statusCol] || "").toString() : "";
+                        if (!/휴업|폐업/i.test(status)) return;
+
+                        const lat = parseFloat(row[latCol]);
+                        const lng = parseFloat(row[lngCol]);
+
+                        if (isNaN(lat) || isNaN(lng)) {
+                            // 비정상 좌표 발견 로그
+                            if (idx < 10) console.log(`행 ${idx} 좌표 비정상: lat=${row[latCol]} lng=${row[lngCol]}`);
+                            return;
+                        }
+
+                        const name = nameCol ? row[nameCol] : "";
+                        const addr = addrCol ? row[addrCol] : "";
+
+                        const marker = new kakao.maps.Marker({
+                            position: new kakao.maps.LatLng(lat, lng)
+                        });
+
+                        const color = /폐업/.test(status) ? "#ff5a5f" : "#ffb74d";
+                        const infoContent = `<div style="padding:6px 8px;font-size:13px;">
+            <div style="font-weight:600">${name || '(이름없음)'}</div>
+            <div style="margin-top:4px">${addr || ''}</div>
+            <div style="margin-top:6px"><span style="display:inline-block;width:10px;height:10px;background:${color};border-radius:6px;margin-right:6px;"></span>${status}</div>
+          </div>`;
+                        const info = new kakao.maps.InfoWindow({ content: infoContent });
+                        kakao.maps.event.addListener(marker, 'click', function () { info.open(map, marker); });
+
+                        markers.push(marker);
+                        shown++;
+                    });
+
+                    if (markers.length) {
+                        clusterer.addMarkers(markers);
+                    }
+
+                },
+                error: function (err) {
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
