@@ -4,7 +4,7 @@ from geopy.geocoders import Nominatim
 from tqdm import tqdm
 import time
 
-KAKAO_API_KEY = "fd23c221eb2a6613fe4502b316b945ca"
+
 
 # CSV 파일 읽기
 file_name = "산업통상자원부_전국_주유소_등록현황_20241231.csv"

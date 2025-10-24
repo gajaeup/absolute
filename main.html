@@ -3,25 +3,25 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>디버그: 폐·휴업 주유소 클러스터 지도</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-
-        #map {
-            width: 100%;
-            height: 1440px;
-        }
-    </style>
+    <title> 폐·휴업 주유소 클러스터 지도</title>
+    <link rel="stylesheet" href="main.css">
     <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <!-- Kakao (clusterer 포함) -->
-    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=65e1c8f1ab7fa043334d2b12c4bde905&libraries=clusterer"></script>
+    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=&libraries=clusterer"></script>
 </head>
 
 <body>
+    <header class="navbar">
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="폐주유소 검색" autocomplete="off" />
+            <button id="search-button">
+                <span><img src="pngegg.png" alt="search" width="20" height="20"></span>
+            </button>
+            <ul id="suggestions"></ul>
+        </div>
+    </header>
+
     <div id="map"></div>
 
     <script>
@@ -42,7 +42,7 @@
             });
 
             const CSV_FILE = "산업통상자원부_폐휴업주유소_좌표추가_kakao.csv";
-
+            let stations = [];
             Papa.parse(CSV_FILE, {
                 download: true,
                 header: true,
@@ -92,6 +92,7 @@
 
 
                     const markers = [];
+
                     let shown = 0;
                     data.forEach((row, idx) => {
                         const status = statusCol ? (row[statusCol] || "").toString() : "";
@@ -101,24 +102,22 @@
                         const lng = parseFloat(row[lngCol]);
 
                         if (isNaN(lat) || isNaN(lng)) {
-                            // 비정상 좌표 발견 로그
-                            if (idx < 10) console.log(`행 ${idx} 좌표 비정상: lat=${row[latCol]} lng=${row[lngCol]}`);
                             return;
                         }
 
                         const name = nameCol ? row[nameCol] : "";
                         const addr = addrCol ? row[addrCol] : "";
+                        stations.push({ name, addr, lat, lng });
 
                         const marker = new kakao.maps.Marker({
                             position: new kakao.maps.LatLng(lat, lng)
                         });
-
                         const color = /폐업/.test(status) ? "#ff5a5f" : "#ffb74d";
                         const infoContent = `<div style="padding:6px 8px;font-size:13px;">
-            <div style="font-weight:600">${name || '(이름없음)'}</div>
-            <div style="margin-top:4px">${addr || ''}</div>
-            <div style="margin-top:6px"><span style="display:inline-block;width:10px;height:10px;background:${color};border-radius:6px;margin-right:6px;"></span>${status}</div>
-          </div>`;
+                        <div style="font-weight:600">${name || '(이름없음)'}</div>
+                        <div style="margin-top:4px"> 주소: ${addr || ''}</div>
+                        <div style="margin-top:6px"><span style="display:inline-block;width:10px;height:10px;background:${color};border-radius:6px;margin-right:6px;"></span>상태: ${status}</div>
+                        </div>`;
                         const info = new kakao.maps.InfoWindow({ content: infoContent });
                         kakao.maps.event.addListener(marker, 'click', function () { info.open(map, marker); });
 
@@ -126,12 +125,49 @@
                         shown++;
                     });
 
+                    const searchInput = document.getElementById("search-input");
+                    const searchButton = document.getElementById("search-button");
+                    const suggestions = document.getElementById("suggestions");
+
+                    function moveTo(station) {
+                        const pos = new kakao.maps.LatLng(station.lat, station.lng);
+                        map.setLevel(4);
+                        map.panTo(pos);
+                    }
+
+                    searchInput.addEventListener("input", () => {
+                        const keyword = searchInput.value.trim().toLowerCase();
+                        suggestions.innerHTML = "";
+                        if (!keyword) return;
+
+                        stations
+                            .filter(s => s.name && s.name.toLowerCase().includes(keyword))
+                            .slice(0, 10)
+                            .forEach(s => {
+                                const li = document.createElement("li");
+                                li.textContent = s.name;
+                                li.onclick = () => { moveTo(s); suggestions.innerHTML = ""; searchInput.value = s.name; };
+                                suggestions.appendChild(li);
+                            });
+                    });
+
+                    // 검색 버튼 클릭
+                    searchButton.addEventListener("click", () => {
+                        const keyword = searchInput.value.trim().toLowerCase();
+                        const found = stations.find(s => s.name.toLowerCase().includes(keyword));
+                        if (found) moveTo(found);
+                        else alert("일치하는 주유소를 찾을 수 없습니다.");
+                    });
+
+                    // 외부 클릭 시 닫기
+                    document.addEventListener("click", (e) => {
+                        if (!document.querySelector(".search-container").contains(e.target)) {
+                            suggestions.innerHTML = "";
+                        }
+                    });
                     if (markers.length) {
                         clusterer.addMarkers(markers);
                     }
-
-                },
-                error: function (err) {
                 }
             });
         });
