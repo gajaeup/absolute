@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>폐주유소 상세 정보</title>
+    <link rel="stylesheet" href="detail.css">
+
+    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=65e1c8f1ab7fa043334d2b12c4bde905&libraries=services"></script>
+</head>
+
+<body>
+    <div class="detail-container">
+        <div class="detail-header">
+            <p><span id="name"></span> 활용방안</p>
+        </div>
+    </div>
+    <div class="detail-content">
+        <div class="detail-left">
+            <div class="after-img">after</div>
+            <div class="info-text">
+                <p><strong>주소:</strong> <span id="station-addr"></span></p>
+                <p><strong>상태:</strong> <span id="station-status"></span></p>
+                <p><strong>특징:</strong></p>
+                <class="info-text-item">
+                    <p>활용 방안1:</p>
+                    </class>
+                    <class="info-text-item">
+                        <p>활용 방안2:</p>
+                        </class>
+                        <class="info-text-item">
+                            <p>활용 방안3:</p>
+                            </class>
+                            <div class="feature-text">
+                                <p>배경 지표</p>
+                            </div>
+            </div>
+        </div>
+
+        <div class="detail-right">
+            <div id="roadview" class="roadview-box"></div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        const saved = localStorage.getItem("selectedStation");
+        if (saved) {
+            const { name, addr, status, lat, lng } = JSON.parse(saved);
+            document.getElementById('name').textContent = name || '';
+            document.getElementById('station-addr').textContent = addr || '';
+            document.getElementById('station-status').textContent = status || '';
+            const position = new kakao.maps.LatLng(lat, lng);
+            const roadviewContainer = document.getElementById("roadview");
+            const roadview = new kakao.maps.Roadview(roadviewContainer);
+            const roadviewClient = new kakao.maps.RoadviewClient();
+
+            roadviewClient.getNearestPanoId(position, 50, function (panoId) {
+                if (panoId) {
+                    roadview.setPanoId(panoId, position);
+                } else {
+                    roadviewContainer.innerHTML =
+                        "<p style='padding:30px; text-align:center;'>로드뷰를 불러올 수 없습니다.</p>";
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

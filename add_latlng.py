@@ -5,7 +5,7 @@ from tqdm import tqdm
 import time
 
 
-
+KAKAO_API_KEY = "65e1c8f1ab7fa043334d2b12c4bde905"
 # CSV 파일 읽기
 file_name = "산업통상자원부_전국_주유소_등록현황_20241231.csv"
 df = pd.read_csv(file_name, encoding="utf-8")

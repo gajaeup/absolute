@@ -8,7 +8,7 @@
     <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <!-- Kakao (clusterer 포함) -->
-    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=&libraries=clusterer"></script>
+    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=65e1c8f1ab7fa043334d2b12c4bde905&libraries=clusterer"></script>
 </head>
 
 <body>
@@ -26,10 +26,28 @@
 
     <script>
         kakao.maps.load(function () {
+            let defaultCenter = new kakao.maps.LatLng(36.5, 127.8);
+            let defaultLevel = 12;
 
+            const savedCenter = localStorage.getItem('map_center');
+            const savedLevel = localStorage.getItem('map_level');
+
+            if (savedCenter) {
+                const { lat, lng } = JSON.parse(savedCenter);
+                defaultCenter = new kakao.maps.LatLng(lat, lng);
+            }
+            if (savedLevel) {
+                defaultLevel = parseInt(savedLevel);
+            }
             const map = new kakao.maps.Map(document.getElementById('map'), {
-                center: new kakao.maps.LatLng(36.5, 127.8),
-                level: 12
+                center: defaultCenter,
+                level: defaultLevel
+            });
+            kakao.maps.event.addListener(map, 'center_changed', function () {
+                const center = map.getCenter();
+                const level = map.getLevel();
+                localStorage.setItem('map_center', JSON.stringify({ lat: center.getLat(), lng: center.getLng() }));
+                localStorage.setItem('map_level', level);
             });
 
 
@@ -41,8 +59,10 @@
                 disableClickZoom: false
             });
 
-            const CSV_FILE = "산업통상자원부_폐휴업주유소_좌표추가_kakao.csv";
+            const CSV_FILE = "폐주유소좌표변환.csv";
             let stations = [];
+            const markers = [];
+            let openInfoWindow = null;
             Papa.parse(CSV_FILE, {
                 download: true,
                 header: true,
@@ -60,7 +80,6 @@
 
                     // 헤더 출력(디버그)
                     const headers = results.meta.fields || Object.keys(data[0]);
-                    console.log('CSV 헤더: ' + JSON.stringify(headers));
 
                     // 컬럼 자동 감지 (이전 함수과 동일)
                     function findColumnName(headers, candidates) {
@@ -78,22 +97,18 @@
                         return null;
                     }
 
-                    const statusCol = findColumnName(headers, ["상태", "status", "상태코드", "구분"]);
-                    const nameCol = findColumnName(headers, ["업체명"]);
-                    const addrCol = findColumnName(headers, ["주소", "소재지", "소재지지번", "주소지"]);
-                    const latCol = findColumnName(headers, ["위도", "lat", "y"]);
-                    const lngCol = findColumnName(headers, ["경도", "lng", "lon", "x", "long"]);
+                    const statusCol = findColumnName(headers, ["field4"]);
+                    const nameCol = findColumnName(headers, ["field5"]);
+                    const addrCol = findColumnName(headers, ["field6"]);
+                    const latCol = findColumnName(headers, ["_Y"]);
+                    const lngCol = findColumnName(headers, ["_X"]);
 
                     if (!latCol || !lngCol) {
                         console.log('위도/경도 컬럼을 찾을 수 없습니다. CSV 헤더 이름을 확인하세요.');
                         return;
                     }
 
-
-
-                    const markers = [];
-
-                    let shown = 0;
+                    let uidCounter = 0;
                     data.forEach((row, idx) => {
                         const status = statusCol ? (row[statusCol] || "").toString() : "";
                         if (!/휴업|폐업/i.test(status)) return;
@@ -112,18 +127,65 @@
                         const marker = new kakao.maps.Marker({
                             position: new kakao.maps.LatLng(lat, lng)
                         });
+                        const uid = 'iw-' + (uidCounter++);
                         const color = /폐업/.test(status) ? "#ff5a5f" : "#ffb74d";
-                        const infoContent = `<div style="padding:6px 8px;font-size:13px;">
-                        <div style="font-weight:600">${name || '(이름없음)'}</div>
-                        <div style="margin-top:4px"> 주소: ${addr || ''}</div>
-                        <div style="margin-top:6px"><span style="display:inline-block;width:10px;height:10px;background:${color};border-radius:6px;margin-right:6px;"></span>상태: ${status}</div>
+                        const infoContent = `<div class="info-window" id="iw-${idx}">
+                            <div class="info-img">(사진)</div>
+                            <div class="info-body">
+                                <div class="info-name">${name || '(이름없음)'}</div>
+                                <div class="info-addr"> 주소: ${addr || ''}</div>
+                                <div class="info-status">상태:
+                                    <span class="status-badge" style="background:${color};"> ${status}</span>
+                                </div>
+                                <div class="info-desc">특징: </div>
+                            </div>
                         </div>`;
                         const info = new kakao.maps.InfoWindow({ content: infoContent });
-                        kakao.maps.event.addListener(marker, 'click', function () { info.open(map, marker); });
 
+                        kakao.maps.event.addListener(marker, 'click', function () {
+                            if (openInfoWindow) openInfoWindow.close();
+                            info.open(map, marker);
+                            openInfoWindow = info;
+                            setTimeout(() => {
+                                const iw = document.getElementById(`iw-${idx}`);
+                                if (iw) {
+                                    iw.addEventListener('click', function (e) {
+                                        e.stopPropagation();
+                                        localStorage.setItem("selectedStation", JSON.stringify({
+                                            name,
+                                            addr,
+                                            status,
+                                            lat,
+                                            lng
+                                        }));
+
+                                        const popup = window.open(
+                                            "detail.html",
+                                            '_blank',
+                                            `width=${screen.availWidth},height=${screen.availHeight},left=0,top=0,scrollbars=yes,resizable=yes`
+                                        );
+                                        if (popup) {
+                                            popup.moveTo(0, 0);
+                                            popup.resizeTo(screen.availWidth, screen.availHeight);
+                                        } else {
+                                            alert("팝업이 차단되었습니다. 팝업 차단을 해제하고 다시 시도해주세요.");
+                                        }
+                                    });
+                                }
+                            }, 100); // 0.1초 지연으로 DOM 완성
+                        });
                         markers.push(marker);
-                        shown++;
                     });
+                    if (markers.length) {
+                        clusterer.addMarkers(markers);
+                    }
+                    kakao.maps.event.addListener(map, 'click', function () {
+                        if (openInfoWindow) {
+                            openInfoWindow.close();
+                            openInfoWindow = null;
+                        }
+                    });
+
 
                     const searchInput = document.getElementById("search-input");
                     const searchButton = document.getElementById("search-button");
@@ -165,6 +227,7 @@
                             suggestions.innerHTML = "";
                         }
                     });
+
                     if (markers.length) {
                         clusterer.addMarkers(markers);
                     }
