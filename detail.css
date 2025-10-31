@@ -59,11 +59,12 @@ body {
     justify-content: right;
     align-items: right;
     width: 50%;
+    height: 50vh;
     margin-right: 25px;
 
 }
 .roadview-box {
-    width: 50%;
+    width: 80%;
     height: 100%;
     border-radius: 6px;
 }

@@ -109,6 +109,7 @@
                     }
 
                     let uidCounter = 0;
+                    const seen = new Set();
                     data.forEach((row, idx) => {
                         const status = statusCol ? (row[statusCol] || "").toString() : "";
                         if (!/휴업|폐업/i.test(status)) return;
@@ -119,6 +120,9 @@
                         if (isNaN(lat) || isNaN(lng)) {
                             return;
                         }
+                        const key = `${lat},${lng}`;
+                        if (seen.has(key)) return;
+                        seen.add(key);
 
                         const name = nameCol ? row[nameCol] : "";
                         const addr = addrCol ? row[addrCol] : "";
@@ -130,19 +134,19 @@
                         const uid = 'iw-' + (uidCounter++);
                         const color = /폐업/.test(status) ? "#ff5a5f" : "#ffb74d";
                         const infoContent = `<div class="info-window" id="iw-${idx}">
-                            <div class="info-img">(사진)</div>
+                            <div class="info-img"><img src="station_images/대림주유소.jpg" alt="${name}" width="234" height="110"></div>
                             <div class="info-body">
                                 <div class="info-name">${name || '(이름없음)'}</div>
                                 <div class="info-addr"> 주소: ${addr || ''}</div>
                                 <div class="info-status">상태:
                                     <span class="status-badge" style="background:${color};"> ${status}</span>
                                 </div>
-                                <div class="info-desc">특징: </div>
+                                <div class="info-desc">해결방안: </div>
                             </div>
                         </div>`;
                         const info = new kakao.maps.InfoWindow({ content: infoContent });
 
-                        kakao.maps.event.addListener(marker, 'click', function () {
+                        kakao.maps.event.addListener(marker, 'mouseover', function () {
                             if (openInfoWindow) openInfoWindow.close();
                             info.open(map, marker);
                             openInfoWindow = info;
@@ -179,7 +183,7 @@
                     if (markers.length) {
                         clusterer.addMarkers(markers);
                     }
-                    kakao.maps.event.addListener(map, 'click', function () {
+                    kakao.maps.event.addListener(map, 'mouseout', function () {
                         if (openInfoWindow) {
                             openInfoWindow.close();
                             openInfoWindow = null;
