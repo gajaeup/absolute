@@ -6,7 +6,6 @@
   "routes": [
     { "src": "^/$", "dest": "/main.html" },
     { "src": "^/main$", "dest": "/main.html" },
-    { "src": "^/detail$", "dest": "/detail.html" },
-    { "src": "/(.*)", "dest": "/$1" }
+    { "src": "^/detail$", "dest": "/detail.html" }
   ]
 }
