@@ -3,12 +3,9 @@
 
 <head>
     <meta charset="utf-8" />
-    <title> 폐·휴업 주유소 클러스터 지도</title>
+    <title>폐·휴업 주유소 클러스터 지도</title>
     <link rel="stylesheet" href="main.css">
-    <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <!-- Kakao (clusterer 포함) -->
-    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=&libraries=clusterer"></script>
 </head>
 
 <body>
@@ -25,74 +22,79 @@
     <div id="map"></div>
 
     <script>
-        kakao.maps.load(function () {
+        async function loadKakao() {
+            const res = await fetch("/api/kakao");
+            const data = await res.json();
+            const apiKey = data.key;
+
+            const script = document.createElement("script");
+            script.src = `//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${apiKey}&libraries=services,clusterer`;
+            script.onload = () => kakao.maps.load(initMap);
+            document.head.appendChild(script);
+        }
+
+        loadKakao();
+        function initMap() {
             let defaultCenter = new kakao.maps.LatLng(36.5, 127.8);
             let defaultLevel = 12;
 
-            const savedCenter = localStorage.getItem('map_center');
-            const savedLevel = localStorage.getItem('map_level');
+            const savedCenter = localStorage.getItem("map_center");
+            const savedLevel = localStorage.getItem("map_level");
 
             if (savedCenter) {
                 const { lat, lng } = JSON.parse(savedCenter);
                 defaultCenter = new kakao.maps.LatLng(lat, lng);
             }
-            if (savedLevel) {
-                defaultLevel = parseInt(savedLevel);
-            }
-            const map = new kakao.maps.Map(document.getElementById('map'), {
+            if (savedLevel) defaultLevel = parseInt(savedLevel);
+
+            const map = new kakao.maps.Map(document.getElementById("map"), {
                 center: defaultCenter,
                 level: defaultLevel
             });
-            kakao.maps.event.addListener(map, 'center_changed', function () {
+
+            kakao.maps.event.addListener(map, "center_changed", () => {
                 const center = map.getCenter();
                 const level = map.getLevel();
-                localStorage.setItem('map_center', JSON.stringify({ lat: center.getLat(), lng: center.getLng() }));
-                localStorage.setItem('map_level', level);
+                localStorage.setItem("map_center", JSON.stringify({ lat: center.getLat(), lng: center.getLng() }));
+                localStorage.setItem("map_level", level);
             });
 
-
-
             const clusterer = new kakao.maps.MarkerClusterer({
-                map: map,
+                map,
                 averageCenter: true,
                 minLevel: 7,
                 disableClickZoom: false
             });
 
             const CSV_FILE = "폐주유소좌표변환.csv";
-            let stations = [];
+            const stations = [];
             const markers = [];
             let openInfoWindow = null;
+
+            kakao.maps.event.addListener(map, "mouseout", () => {
+                if (openInfoWindow) {
+                    openInfoWindow.close();
+                    openInfoWindow = null;
+                }
+            });
+
             Papa.parse(CSV_FILE, {
                 download: true,
                 header: true,
                 skipEmptyLines: true,
-                complete: function (results) {
-                    if (results.errors && results.errors.length) {
-                        console.warn(results.errors);
-                    }
-
+                complete: (results) => {
                     const data = results.data;
-
-                    if (!data || data.length === 0) {
-                        return;
-                    }
-
-                    // 헤더 출력(디버그)
                     const headers = results.meta.fields || Object.keys(data[0]);
 
-                    // 컬럼 자동 감지 (이전 함수과 동일)
                     function findColumnName(headers, candidates) {
                         for (const c of candidates) {
-                            const idx = headers.findIndex(h => h && h.toString().trim().toLowerCase() === c.toLowerCase());
+                            const idx = headers.findIndex(h => h && h.toLowerCase() === c.toLowerCase());
                             if (idx !== -1) return headers[idx];
                         }
                         for (const h of headers) {
                             if (!h) continue;
-                            const s = h.toString().toLowerCase();
-                            for (const c of candidates) {
-                                if (s.includes(c.toLowerCase())) return h;
-                            }
+                            const s = h.toLowerCase();
+                            for (const c of candidates) if (s.includes(c.toLowerCase())) return h;
                         }
                         return null;
                     }
@@ -103,97 +105,68 @@
                     const latCol = findColumnName(headers, ["_Y"]);
                     const lngCol = findColumnName(headers, ["_X"]);
 
-                    if (!latCol || !lngCol) {
-                        console.log('위도/경도 컬럼을 찾을 수 없습니다. CSV 헤더 이름을 확인하세요.');
-                        return;
-                    }
-
-                    let uidCounter = 0;
                     const seen = new Set();
                     data.forEach((row, idx) => {
-                        const status = statusCol ? (row[statusCol] || "").toString() : "";
-                        if (!/휴업|폐업/i.test(status)) return;
+                        const status = row[statusCol] || "";
+                        if (!/휴업|폐업/.test(status)) return;
 
                         const lat = parseFloat(row[latCol]);
                         const lng = parseFloat(row[lngCol]);
+                        if (isNaN(lat) || isNaN(lng)) return;
 
-                        if (isNaN(lat) || isNaN(lng)) {
-                            return;
-                        }
                         const key = `${lat},${lng}`;
                         if (seen.has(key)) return;
                         seen.add(key);
 
-                        const name = nameCol ? row[nameCol] : "";
-                        const addr = addrCol ? row[addrCol] : "";
+                        const name = row[nameCol] || "";
+                        const addr = row[addrCol] || "";
                         stations.push({ name, addr, lat, lng });
 
                         const marker = new kakao.maps.Marker({
                             position: new kakao.maps.LatLng(lat, lng)
                         });
-                        const uid = 'iw-' + (uidCounter++);
-                        const color = /폐업/.test(status) ? "#ff5a5f" : "#ffb74d";
-                        const infoContent = `<div class="info-window" id="iw-${idx}">
-                            <div class="info-img"><img src="station_images/대림주유소.jpg" alt="${name}" width="234" height="110"></div>
-                            <div class="info-body">
-                                <div class="info-name">${name || '(이름없음)'}</div>
-                                <div class="info-addr"> 주소: ${addr || ''}</div>
-                                <div class="info-status">상태:
-                                    <span class="status-badge" style="background:${color};"> ${status}</span>
-                                </div>
-                                <div class="info-desc">해결방안: </div>
-                            </div>
-                        </div>`;
-                        const info = new kakao.maps.InfoWindow({ content: infoContent });
 
-                        kakao.maps.event.addListener(marker, 'mouseover', function () {
+                        const color = /폐업/.test(status) ? "#ff5a5f" : "#ffb74d";
+                        const infoHTML = `
+          <div class="info-window" id="iw-${idx}">
+            <div class="info-img"><img src="station_images/대림주유소.jpg" width="234" height="110"></div>
+            <div class="info-body">
+              <div class="info-name">${name || '(이름없음)'}</div>
+              <div class="info-addr">주소: ${addr}</div>
+              <div class="info-status">상태: <span class="status-badge" style="background:${color};">${status}</span></div>
+            </div>
+          </div>
+        `;
+
+                        const info = new kakao.maps.InfoWindow({ content: infoHTML });
+
+                        kakao.maps.event.addListener(marker, "mouseover", () => {
                             if (openInfoWindow) openInfoWindow.close();
                             info.open(map, marker);
                             openInfoWindow = info;
+
                             setTimeout(() => {
                                 const iw = document.getElementById(`iw-${idx}`);
-                                if (iw) {
-                                    iw.addEventListener('click', function (e) {
-                                        e.stopPropagation();
-                                        localStorage.setItem("selectedStation", JSON.stringify({
-                                            name,
-                                            addr,
-                                            status,
-                                            lat,
-                                            lng
-                                        }));
-
-                                        const popup = window.open(
-                                            "detail.html",
-                                            '_blank',
-                                            `width=${screen.availWidth},height=${screen.availHeight},left=0,top=0,scrollbars=yes,resizable=yes`
-                                        );
-                                        if (popup) {
-                                            popup.moveTo(0, 0);
-                                            popup.resizeTo(screen.availWidth, screen.availHeight);
-                                        } else {
-                                            alert("팝업이 차단되었습니다. 팝업 차단을 해제하고 다시 시도해주세요.");
-                                        }
-                                    });
-                                }
-                            }, 100); // 0.1초 지연으로 DOM 완성
+                                if (!iw) return;
+                                iw.onclick = (e) => {
+                                    e.stopPropagation();
+                                    localStorage.setItem("selectedStation", JSON.stringify({ name, addr, status, lat, lng }));
+                                    const popup = window.open("detail.html", "_blank",
+                                        `width=${screen.availWidth},height=${screen.availHeight},left=0,top=0`);
+                                    if (!popup) alert("팝업 차단 해제 필요!");
+                                };
+                            }, 80);
                         });
+
                         markers.push(marker);
                     });
-                    if (markers.length) {
-                        clusterer.addMarkers(markers);
-                    }
-                    kakao.maps.event.addListener(map, 'mouseout', function () {
-                        if (openInfoWindow) {
-                            openInfoWindow.close();
-                            openInfoWindow = null;
-                        }
-                    });
 
+                    if (markers.length) clusterer.addMarkers(markers);
 
-                    const searchInput = document.getElementById("search-input");
-                    const searchButton = document.getElementById("search-button");
-                    const suggestions = document.getElementById("suggestions");
+                    // 검색 처리
+                    const input = document.getElementById("search-input");
+                    const button = document.getElementById("search-button");
+                    const list = document.getElementById("suggestions");
 
                     function moveTo(station) {
                         const pos = new kakao.maps.LatLng(station.lat, station.lng);
@@ -201,44 +174,37 @@
                         map.panTo(pos);
                     }
 
-                    searchInput.addEventListener("input", () => {
-                        const keyword = searchInput.value.trim().toLowerCase();
-                        suggestions.innerHTML = "";
+                    input.oninput = () => {
+                        const keyword = input.value.trim().toLowerCase();
+                        list.innerHTML = "";
                         if (!keyword) return;
 
-                        stations
-                            .filter(s => s.name && s.name.toLowerCase().includes(keyword))
-                            .slice(0, 10)
-                            .forEach(s => {
+                        stations.filter(s => s.name.toLowerCase().includes(keyword))
+                            .slice(0, 10).forEach(s => {
                                 const li = document.createElement("li");
                                 li.textContent = s.name;
-                                li.onclick = () => { moveTo(s); suggestions.innerHTML = ""; searchInput.value = s.name; };
-                                suggestions.appendChild(li);
+                                li.onclick = () => { moveTo(s); list.innerHTML = ""; input.value = s.name; };
+                                list.appendChild(li);
                             });
-                    });
+                    };
 
-                    // 검색 버튼 클릭
-                    searchButton.addEventListener("click", () => {
-                        const keyword = searchInput.value.trim().toLowerCase();
+                    button.onclick = () => {
+                        const keyword = input.value.trim().toLowerCase();
                         const found = stations.find(s => s.name.toLowerCase().includes(keyword));
                         if (found) moveTo(found);
-                        else alert("일치하는 주유소를 찾을 수 없습니다.");
-                    });
+                        else alert("일치하는 주유소가 없습니다.");
+                    };
 
-                    // 외부 클릭 시 닫기
                     document.addEventListener("click", (e) => {
-                        if (!document.querySelector(".search-container").contains(e.target)) {
-                            suggestions.innerHTML = "";
-                        }
+                        if (!document.querySelector(".search-container").contains(e.target))
+                            list.innerHTML = "";
                     });
-
-                    if (markers.length) {
-                        clusterer.addMarkers(markers);
-                    }
                 }
             });
-        });
+        }
+        loadKakao();
     </script>
+
 </body>
 
 </html>

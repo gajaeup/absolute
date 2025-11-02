@@ -10,7 +10,6 @@ from selenium.webdriver.chrome.service import Service
 
 test_stations = [
 
-    "(유)하은에너지 우문가스충전주유소"
 
 ]
 
