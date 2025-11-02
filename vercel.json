@@ -1,10 +1,11 @@
 {
   "version": 2,
   "routes": [
+    { "src": "^/api/(.*)", "dest": "/api/$1" },
+
     { "src": "/", "dest": "/main.html" },
     { "src": "/main", "dest": "/main.html" },
     { "src": "/detail", "dest": "/detail.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
-
