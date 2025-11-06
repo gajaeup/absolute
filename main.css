@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    padding: 0;
+    padding-top: 70px;
     font-family: "Noto Sans KR", sans-serif;
 }
 
@@ -122,6 +122,7 @@ body {
 
 /*  주소 */
 .info-addr {
+    word-break: break-all;
     margin-bottom: 4px;
     line-height: 1.3;
 }
@@ -154,4 +155,44 @@ body {
 /*  특징 */
 .info-desc {
     margin-top: 4px;
+}
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 70px;
+    width: 300px;
+    height: calc(100% - 70px);
+    background: white;
+    border-left: 2px solid #ddd;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.15);
+    padding: 15px;
+    overflow-y: auto;
+    transition: transform .25s;
+    z-index: 1000;
+}
+
+.sidebar.hidden {
+    transform: translateX(-100%);
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+#sidebar-close {
+    border: none;
+    background: #eee;
+    padding: 5px 12px;
+    cursor: pointer;
+}
+
+.roadview-box {
+    width: 100%;
+    height: 200px;
+    margin-top: 12px;
+    background: #f1f1f1;
 }

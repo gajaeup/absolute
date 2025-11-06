@@ -23,18 +23,59 @@
 
     <script>
         async function loadKakao() {
-            const res = await fetch("/api/kakao");
-            const data = await res.json();
-            const apiKey = data.key;
-
+            let apiKey;
+            const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+            if (isLocal) {
+                apiKey = "65e1c8f1ab7fa043334d2b12c4bde905";
+                console.log(" Local Kakao Key 사용중");
+            }
+            else {
+                try {
+                    const res = await fetch("/api/kakao");
+                    const data = await res.json();
+                    apiKey = data.key;
+                    console.log(" Vercel Key 사용중");
+                } catch (err) {
+                    console.error("서버에서 키 받기 실패", err);
+                    return;
+                }
+            }
             const script = document.createElement("script");
-            script.src = `//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${apiKey}&libraries=services,clusterer`;
-            script.onload = () => kakao.maps.load(initMap);
+            script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${apiKey}&libraries=services,clusterer`;
+            script.onload = () => {
+                console.log("✅ SDK script loaded:", !!window.kakao);
+                kakao.maps.load(() => {
+                    console.log("✅ kakao.maps.load callback fired");
+                    initMap();
+                });
+            };
+
             document.head.appendChild(script);
         }
 
         loadKakao();
-        function initMap() {
+        let openOverlay = null;
+        let closeTimer = null;
+        function showDetailPanel(station) {
+            document.getElementById("sidebar-name").textContent = station.name;
+            document.getElementById("sidebar-addr").textContent = station.addr;
+            document.getElementById("sidebar-status").textContent = station.status;
+
+            const sidebar = document.getElementById("sidebar");
+            sidebar.classList.remove("hidden");
+
+            const pos = new kakao.maps.LatLng(station.lat, station.lng);
+            const container = document.getElementById("roadview");
+            container.innerHTML = "";
+            const rv = new kakao.maps.Roadview(container);
+            const rvc = new kakao.maps.RoadviewClient();
+
+            rvc.getNearestPanoId(pos, 50, (panoId) => {
+                if (panoId) rv.setPanoId(panoId, pos);
+                else container.innerHTML = "<p style='padding:25px;text-align:center'>로드뷰 없음</p>";
+            });
+        }
+        async function initMap() {
             let defaultCenter = new kakao.maps.LatLng(36.5, 127.8);
             let defaultLevel = 12;
 
@@ -52,12 +93,14 @@
                 level: defaultLevel
             });
 
+
             kakao.maps.event.addListener(map, "center_changed", () => {
                 const center = map.getCenter();
                 const level = map.getLevel();
                 localStorage.setItem("map_center", JSON.stringify({ lat: center.getLat(), lng: center.getLng() }));
                 localStorage.setItem("map_level", level);
             });
+
 
             const clusterer = new kakao.maps.MarkerClusterer({
                 map,
@@ -66,17 +109,27 @@
                 disableClickZoom: false
             });
 
-            const CSV_FILE = "폐주유소좌표변환.csv";
+            const CSV_FILE = "station.csv";
             const stations = [];
             const markers = [];
-            let openInfoWindow = null;
+            let polygons = [];
 
-            kakao.maps.event.addListener(map, "mouseout", () => {
-                if (openInfoWindow) {
-                    openInfoWindow.close();
-                    openInfoWindow = null;
+            const geoSources = {
+                sido: "ctprvn_wgs84.geojson",
+                sig: "sig_wgs84.geojson",
+                emd: "emd_wgs84.geojson"
+            };
+            const geoData = {};
+
+            for (const [key, path] of Object.entries(geoSources)) {
+                try {
+                    const res = await fetch(path);
+                    geoData[key] = await res.json();
+                    console.log(`✅ ${key} 레이어 로드 완료:`, geoData[key].features.length);
+                } catch (err) {
+                    console.error(`${key} GeoJSON 로드 실패`, err);
                 }
-            });
+            }
 
             Papa.parse(CSV_FILE, {
                 download: true,
@@ -106,7 +159,7 @@
                     const lngCol = findColumnName(headers, ["_X"]);
 
                     const seen = new Set();
-                    data.forEach((row, idx) => {
+                    data.reverse().forEach((row, idx) => {
                         const status = row[statusCol] || "";
                         if (!/휴업|폐업/.test(status)) return;
 
@@ -137,72 +190,199 @@
             </div>
           </div>
         `;
-
-                        const info = new kakao.maps.InfoWindow({ content: infoHTML });
+                        const overlay = new kakao.maps.CustomOverlay({
+                            position: marker.getPosition(),
+                            content: infoHTML,
+                            yAnchor: 1.5
+                        });
 
                         kakao.maps.event.addListener(marker, "mouseover", () => {
-                            if (openInfoWindow) openInfoWindow.close();
-                            info.open(map, marker);
-                            openInfoWindow = info;
+                            if (closeTimer) {
+                                clearTimeout(closeTimer);
+                                closeTimer = null;
+                            }
+                            if (openOverlay) openOverlay.setMap(null);
+                            overlay.setMap(map);
+                            openOverlay = overlay;
 
                             setTimeout(() => {
                                 const iw = document.getElementById(`iw-${idx}`);
                                 if (!iw) return;
-                                iw.onclick = (e) => {
+
+                                iw.addEventListener("mouseenter", () => {
+                                    if (closeTimer) clearTimeout(closeTimer);
+                                });
+                                iw.addEventListener("mouseleave", () => {
+                                    closeTimer = setTimeout(() => {
+                                        if (openOverlay) openOverlay.setMap(null);
+                                        openOverlay = null;
+                                    }, 200);
+                                });
+
+                                iw.addEventListener("click", (e) => {
                                     e.stopPropagation();
-                                    localStorage.setItem("selectedStation", JSON.stringify({ name, addr, status, lat, lng }));
-                                    const popup = window.open("detail.html", "_blank",
-                                        `width=${screen.availWidth},height=${screen.availHeight},left=0,top=0`);
-                                    if (!popup) alert("팝업 차단 해제 필요!");
-                                };
+                                    showDetailPanel({ name, addr, status, lat, lng });
+                                    if (openOverlay) {
+                                        openOverlay.setMap(null);
+                                        openOverlay = null;
+                                    }
+                                });
                             }, 80);
+                        });
+                        kakao.maps.event.addListener(marker, "mouseout", () => {
+                            closeTimer = setTimeout(() => {
+                                const hoveredCard = document.querySelector(".info-window:hover");
+                                if (!hoveredCard && openOverlay) {
+                                    openOverlay.setMap(null);
+                                    openOverlay = null;
+                                }
+                            }, 200);
                         });
 
                         markers.push(marker);
                     });
-
-                    if (markers.length) clusterer.addMarkers(markers);
+                    clusterer.addMarkers(markers);
 
                     // 검색 처리
                     const input = document.getElementById("search-input");
                     const button = document.getElementById("search-button");
                     const list = document.getElementById("suggestions");
+                    button.onclick = handleSearch;
+                    input.addEventListener("keypress", (e) => {
+                        if (e.key === "Enter") handleSearch();
+                    });
 
-                    function moveTo(station) {
-                        const pos = new kakao.maps.LatLng(station.lat, station.lng);
-                        map.setLevel(4);
-                        map.panTo(pos);
-                    }
-
-                    input.oninput = () => {
-                        const keyword = input.value.trim().toLowerCase();
-                        list.innerHTML = "";
+                    function handleSearch() {
+                        const keyword = input.value.trim();
                         if (!keyword) return;
 
-                        stations.filter(s => s.name.toLowerCase().includes(keyword))
-                            .slice(0, 10).forEach(s => {
-                                const li = document.createElement("li");
-                                li.textContent = s.name;
-                                li.onclick = () => { moveTo(s); list.innerHTML = ""; input.value = s.name; };
-                                list.appendChild(li);
+                        // 기존 폴리곤 제거
+                        polygons.forEach(p => p.setMap(null));
+                        polygons = [];
+
+                        // 주유소 이름 검색
+                        const foundStation = stations.find(s => s.name === keyword);
+
+                        if (foundStation) {
+                            const pos = new kakao.maps.LatLng(foundStation.lat, foundStation.lng);
+                            map.setLevel(4);
+                            map.panTo(pos);
+                            return;
+                        }
+
+                        // ⭐ 2. 행정구역 검색
+                        const matched = handleRegionSearch(keyword);
+                        if (!matched) alert("일치하는 주유소나 행정구역이 없습니다.");
+                    }
+
+                    // ✅ 행정구역 검색 함수
+                    function handleRegionSearch(keyword) {
+                        const layers = [
+                            { name: "시도", data: geoData.sido, key: "CTP_KOR_NM" },
+                            { name: "시군구", data: geoData.sig, key: "SIG_KOR_NM" },
+                            { name: "읍면동", data: geoData.emd, key: "EMD_KOR_NM" }
+                        ];
+                        for (const { name, data, key } of layers) {
+                            if (!data) continue;
+                            const match = data.features.find(f =>
+                                f.properties[key] && f.properties[key].startsWith(keyword)
+                            );
+
+                            if (match) {
+                                console.log(`✅ ${name} 매칭됨:`, match.properties[key]);
+                                try {
+                                    // ⭐ 매칭된 Feature만 drawPolygon으로 전달
+                                    drawPolygon(match);
+                                } catch (e) {
+                                    // GeoJSON 구조 오류(치명적)는 여기서 잡고 콘솔에 출력합니다.
+                                    console.error("❌ drawPolygon 함수 실행 중 치명적 오류 발생:", e);
+                                }
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+
+                    function drawPolygon(feature) {
+                        if (!feature || !feature.geometry || !feature.geometry.type) { return; }
+                        const polygonPaths = [];
+
+                        // --- 1. Polygon 타입 처리 (단순 경로) ---
+                        if (feature.geometry.type === "Polygon") {
+                            const coords = feature.geometry.coordinates[0];
+                            const path = coords.map(([x, y]) => new kakao.maps.LatLng(y, x));
+                            polygonPaths.push(path);
+                        }
+
+                        // ⭐⭐⭐ 2. MultiPolygon 타입 처리 (복잡 경로) ⭐⭐⭐
+                        else if (feature.geometry.type === "MultiPolygon") {
+
+                            // 이 블록 안에 MultiPolygon 처리 로직 전체를 넣습니다.
+                            feature.geometry.coordinates.forEach(polygonBoundarySet => {
+                                const outerBoundaryCoords = polygonBoundarySet[0];
+
+                                if (outerBoundaryCoords && outerBoundaryCoords.length > 0) {
+                                    const path = outerBoundaryCoords.map(([x, y]) => {
+                                        const lat = parseFloat(y);
+                                        const lng = parseFloat(x);
+                                        if (isNaN(lat) || isNaN(lng)) return null;
+                                        return new kakao.maps.LatLng(lat, lng);
+                                    }).filter(p => p !== null);
+
+                                    if (path.length > 0) {
+                                        polygonPaths.push(path);
+                                    }
+                                }
                             });
-                    };
 
-                    button.onclick = () => {
-                        const keyword = input.value.trim().toLowerCase();
-                        const found = stations.find(s => s.name.toLowerCase().includes(keyword));
-                        if (found) moveTo(found);
-                        else alert("일치하는 주유소가 없습니다.");
-                    };
+                        }
 
-                    document.addEventListener("click", (e) => {
-                        if (!document.querySelector(".search-container").contains(e.target))
-                            list.innerHTML = "";
-                    });
+                        // --- 3. 그 외 타입 처리 ---
+                        else {
+                            console.error("지원하지 않는 GeoJSON geometry 타입:", feature.geometry.type);
+                            return;
+                        }
+
+                        // ⭐⭐⭐ 이하는 GeoJSON 처리 로직이 모두 끝난 후 실행됩니다. ⭐⭐⭐
+                        if (polygonPaths.length === 0) return;
+
+                        // ⭐ Kakao Maps Polygon은 MultiPolygon 처리를 위해 경로 배열의 배열을 허용합니다.
+                        const polygon = new kakao.maps.Polygon({
+                            path: polygonPaths, // 수정된 부분: polygonPaths 사용
+                            strokeWeight: 2,
+                            strokeColor: "#00695c",
+                            strokeOpacity: 0.8,
+                            fillColor: "rgba(0,150,136,0.35)",
+                            fillOpacity: 0.6
+                        });
+                        polygon.setMap(map);
+                        polygons.push(polygon);
+
+                        const bounds = new kakao.maps.LatLngBounds();
+                        polygonPaths.flat().forEach(p => bounds.extend(p)); // 경계 계산 시 flat() 사용
+                        map.setBounds(bounds);
+                        map.relayout();
+                    }
                 }
-            });
+            }
+            );
+            document.getElementById("sidebar-close").onclick = () =>
+                document.getElementById("sidebar").classList.add("hidden");
         }
     </script>
+    <div id="sidebar" class="sidebar hidden">
+        <div class="sidebar-header">
+            <span id="sidebar-name"></span>
+            <button id="sidebar-close">X</button>
+        </div>
+
+        <div class="sidebar-body">
+            <p><strong>주소:</strong> <span id="sidebar-addr"></span></p>
+            <p><strong>상태:</strong> <span id="sidebar-status"></span></p>
+
+            <div id="roadview" class="roadview-box"></div>
+        </div>
+    </div>
 
 </body>
 
