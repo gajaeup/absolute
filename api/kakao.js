@@ -1,3 +1,3 @@
-export default function handler(req, res) {
-  res.json({ key: process.env.KAKAO_API_KEY });
-}
+module.exports = (req, res) => {
+  res.status(200).json({ key: process.env.KAKAO_API_KEY });
+};
