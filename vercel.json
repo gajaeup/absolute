@@ -3,10 +3,10 @@
   "builds": [
     { "src": "api/**/*.js", "use": "@vercel/node" },
     { "src": "public/**", "use": "@vercel/static" },
-    { "src": "*.html", "use": "@vercel/static" },
-    { "src": "*.css", "use": "@vercel/static" }
+    { "src": "*.html", "use": "@vercel/static" }
   ],
   "routes": [
+    { "src": "^/(.*\\.(css|csv|geojson|png|jpg))$", "dest": "/public/$1" },
     { "src": "^/api/.*", "dest": "/api/kakao.js" },
     { "src": "^/$", "dest": "/main.html" },
     { "src": "^/main$", "dest": "/main.html" },
