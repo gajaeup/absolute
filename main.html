@@ -13,7 +13,7 @@
         <div class="search-container">
             <input type="text" id="search-input" placeholder="폐주유소 검색" autocomplete="off" />
             <button id="search-button">
-                <span><img src="pngegg.png" alt="search" width="20" height="20"></span>
+                <span><img src="/public/pngegg.png" alt="search" width="20" height="20"></span>
             </button>
             <ul id="suggestions"></ul>
         </div>
@@ -109,15 +109,15 @@
                 disableClickZoom: false
             });
 
-            const CSV_FILE = "station.csv";
+            const CSV_FILE = "/public/station.csv";
             const stations = [];
             const markers = [];
             let polygons = [];
 
             const geoSources = {
-                sido: "ctprvn_wgs84.geojson",
-                sig: "sig_wgs84.geojson",
-                emd: "emd_wgs84.geojson"
+                sido: "/public/ctprvn_wgs84.geojson",
+                sig: "/public/sig_wgs84.geojson",
+                emd: "/public/emd_wgs84.geojson"
             };
             const geoData = {};
 
