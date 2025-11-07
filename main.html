@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title>폐·휴업 주유소 클러스터 지도</title>
-    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="/main.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
 
@@ -13,7 +13,7 @@
         <div class="search-container">
             <input type="text" id="search-input" placeholder="폐주유소 검색" autocomplete="off" />
             <button id="search-button">
-                <span><img src="/public/pngegg.png" alt="search" width="20" height="20"></span>
+                <span><img src="/pngegg.png" alt="search" width="20" height="20"></span>
             </button>
             <ul id="suggestions"></ul>
         </div>
@@ -115,9 +115,9 @@
             let polygons = [];
 
             const geoSources = {
-                sido: "/public/ctprvn_wgs84.geojson",
-                sig: "/public/sig_wgs84.geojson",
-                emd: "/public/emd_wgs84.geojson"
+                sido: "/ctprvn_wgs84.geojson",
+                sig: "/sig_wgs84.geojson",
+                emd: "/emd_wgs84.geojson"
             };
             const geoData = {};
 
