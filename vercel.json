@@ -1,10 +1,11 @@
 {
   "version": 2,
   "builds": [
-    { "src": "main.html", "use": "@vercel/static" },
-    { "src": "detail.html", "use": "@vercel/static" }
+    { "src": "api/**/*.js", "use": "@vercel/node" },    
+    { "src": "*.html", "use": "@vercel/static" }        
   ],
   "routes": [
+    { "src": "^/api/.*", "dest": "/api/kakao.js" },      
     { "src": "^/$", "dest": "/main.html" },
     { "src": "^/main$", "dest": "/main.html" },
     { "src": "^/detail$", "dest": "/detail.html" },
