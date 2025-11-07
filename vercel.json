@@ -3,11 +3,13 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" }
   ],
+  "builds": [
+    { "src": "*.geojson", "use": "@vercel/static" }
+  ],
   "routes": [
     { "src": "^/$", "dest": "/main.html" },
     { "src": "^/main$", "dest": "/main.html" },
     { "src": "^/detail$", "dest": "/detail.html" },
-    { "src": "/(.*)", "dest": "/$1" },
-    { "src": "*.geojson", "use": "@vercel/static" }
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
