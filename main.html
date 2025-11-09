@@ -69,7 +69,7 @@
             let apiKey;
             const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
             if (isLocal) {
-                apiKey = "65e1c8f1ab7fa043334d2b12c4bde905";
+                apiKey = "";
                 console.log(" Local Kakao Key 사용중");
             }
             else {
@@ -160,7 +160,7 @@
             const geoSources = {
                 sido: "/public/ctprvn_wgs84.json",
                 sig: "/public/sig_wgs84_simplified.json",
-                emd: "/public/HangJeongDong_ver20250401.json"
+                emd: "/public/HangJeongDong_ver20250401_simplified.json"
             };
             const geoData = {};
 
