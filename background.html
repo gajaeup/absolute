@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>Implementation Background</title>
+    <link rel="stylesheet" href="/public/main.css" />
+    <style>
+      body {
+        font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+        color: #111;
+      }
+
+      /* 상단 영역: 제목 + 네비 */
+      .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between; /* ✅ 한 줄 정렬 (좌: 제목 / 우: 메뉴) */
+      }
+
+      /* nav 메뉴 오른쪽 정렬 */
+      .nav-menu {
+        list-style: none;
+        margin: 100px 180px 0 0;
+        padding: 0;
+        display: flex;
+        gap: 30px;
+      }
+
+      .nav-menu li a {
+        text-decoration: none;
+        color: #bbb;
+        font-weight: 600;
+      }
+
+      .nav-menu li a:hover {
+        color: #000;
+      }
+
+      .faq-title {
+        font-size: 2.7em;
+        font-weight: 700;
+        margin: 125px 0 60px 150px;
+      }
+
+      .faq-list {
+        max-width: 1200px;
+        margin: 0 auto;
+        border-top: 1px solid #eee;
+      }
+
+      .faq-list h2 {
+        margin-top: 80px;
+        margin-bottom: 30px;
+        font-size: 26px;
+      }
+      .faq-list li {
+        font-size: 17px;
+        margin-bottom: 40px;
+      }
+
+      .faq-list p {
+        font-size: 17px;
+        margin-bottom: 40px;
+      }
+
+      .faq-list {
+        margin-bottom: 120px; /* FAQ와 footer 간격 띄우기 */
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="main-header">
+      <div class="logo-container">
+        <a href="main.html" id="app-logo"
+          ><img src="/public/logo.jpg" alt="로고" class="logo-image"
+        /></a>
+      </div>
+      <nav class="info-nav">
+        <ul>
+          <li>
+            <a href="background.html" data-info="background">구현 배경</a>
+          </li>
+          <li><a href="casestudy.html" data-info="cases">실제 사례</a></li>
+          <li><a href="faq1.html" data-info="faq">FAQ</a></li>
+          <li><a href="datasource.html" data-info="data">데이터 출처</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="top-bar">
+      <h1 class="faq-title">구현 배경</h1>
+    </div>
+
+    <main>
+      <section class="faq-list">
+        <h2># 사회적·환경적 문제 인식</h2>
+        <p>
+          최근 국내에서는 주유소 수가 꾸준히 감소하면서 도심과 지방 곳곳에
+          사용되지 않는 폐주유소 부지가 빠르게 늘어나고 있습니다. 이들 부지는
+          토양오염 등 환경적 문제뿐 아니라, 장기간 방치될 경우 도시 미관 저해와
+          지역 경제 침체로 이어질 수 있습니다.
+        </p>
+        <h2># 활용 필요성 및 기존의 한계</h2>
+        <p>
+          폐주유소 부지는 도로 접근성이 좋고 인근 유동인구가 많은 경우가 많지만,
+          어떤 용도로 재활용해야 하는지 판단할 수 있는 체계적인 기준이나 데이터
+          기반 의사결정 시스템은 부족한 실정입니다. 대부분은 단순 매각 또는
+          주차장 전환에 그치고 있으며, 지역 특성에 맞는 최적의 활용방안 제시는
+          거의 이루어지지 않았습니다.
+        </p>
+        <h2># 데이터 기반 해결방안 제시</h2>
+        <p>이에 따라 본 프로젝트에서는</p>
+        <ul>
+          <li>
+            폐주유소의 위치, 주변 교통량, 인구밀도, 관광지수, 상권밀집도 등의
+            공공데이터를 수집·분석하고,
+          </li>
+          <li>
+            GIS(지리정보시스템)을 기반으로 공간 분석 및 시각화 기능을 구현,
+          </li>
+          <li>
+            데이터 패턴에 따라 적합한 활용방안(예: EV충전소, 로컬푸드매장,
+            주차장, 카페 등) 을 자동 추천하는 시스템을 구축했습니다.
+          </li>
+        </ul>
+        <h2># 기대효과</h2>
+        <p>본 웹사이트를 통해 사용자는</p>
+        <ul>
+          <li>폐주유소 현황을 한눈에 확인하고,</li>
+          <li>지역 맞춤형 재활용 아이디어를 빠르게 도출할 수 있으며,</li>
+          <li>
+            지자체·민간 투자자·연구자 등 다양한 이해관계자들이 효율적인
+            의사결정을 내릴 수 있도록 지원합니다.
+          </li>
+        </ul>
+        <p>
+          이로써 단순한 데이터 조회를 넘어, 폐주유소 부지의 지속가능한 재활용과
+          지역 활성화에 기여하는 데이터 기반 의사결정 플랫폼을 구현하였습니다.
+        </p>
+      </section>
+    </main>
+  </body>
+  <footer class="site-footer">
+    <div class="footer-content">
+      <span>Copyright by ABSOLUTE</span>
+    </div>
+  </footer>
+</html>

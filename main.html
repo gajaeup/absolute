@@ -1,239 +1,374 @@
 <!DOCTYPE html>
 <html lang="ko">
-
-<head>
+  <head>
     <meta charset="utf-8" />
     <title>폐·휴업 주유소 클러스터 지도</title>
-    <link rel="stylesheet" href="/public/main.css">
+    <link rel="stylesheet" href="/public/main.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-</head>
+  </head>
 
-<body>
+  <body>
     <header class="main-header">
-        <div class="logo-container">
-            <a href="#" id="app-logo">살려주</a>
-        </div>
-        <nav class="info-nav">
-            <ul>
-                <li><a href="#" data-info="background">구현 배경</a></li>
-                <li><a href="#" data-info="cases">실제 사례</a></li>
-                <li><a href="#" data-info="faq">FAQ</a></li>
-                <li><a href="#" data-info="data">데이터 출처</a></li>
-            </ul>
-        </nav>
+      <div class="logo-container">
+        <a href="main.html" id="app-logo"
+          ><img src="/public/logo.jpg" alt="로고" class="logo-image"
+        /></a>
+      </div>
+      <nav class="info-nav">
+        <ul>
+          <li>
+            <a href="background.html" data-info="background">구현 배경</a>
+          </li>
+          <li><a href="casestudy.html" data-info="cases">실제 사례</a></li>
+          <li><a href="faq1.html" data-info="faq">FAQ</a></li>
+          <li><a href="datasource.html" data-info="data">데이터 출처</a></li>
+        </ul>
+      </nav>
     </header>
 
     <aside id="left-sidebar" class="main-vertical-nav">
-        <div class="nav-logo">폐주유소 지도</div>
+      <div class="nav-logo">폐주유소 지도</div>
 
-        <nav>
-            <ul id="nav-menu-list">
-                <li id="nav-search-btn" data-target="search">
-                    <span class="icon">🔍</span> <span>검색</span>
-                </li>
-                <li id="nav-list-btn" data-target="list">
-                    <span class="icon">📋</span> <span>목록</span>
-                </li>
-                <li id="nav-guide-btn" data-target="guide">
-                    <span class="icon">❓</span> <span>이용 가이드</span>
-            </ul>
-        </nav>
+      <nav>
+        <ul id="nav-menu-list">
+          <li id="nav-search-btn" data-target="search">
+            <span class="icon">🔍</span> <span>검색</span>
+          </li>
+          <li id="nav-list-btn" data-target="list">
+            <span class="icon">📋</span> <span>목록</span>
+          </li>
+          <li id="nav-guide-btn" data-target="guide">
+            <span class="icon">❓</span> <span>이용 가이드</span>
+          </li>
+        </ul>
+      </nav>
     </aside>
 
-    <div class="search-container">
-        <div id="search-tabs" class="search-tabs">
-            <button id="tab-station" class="active">주유소 검색</button>
-            <button id="tab-region">지역 검색</button>
-        </div>
-        <div id="search-content-container">
-            <div id="station-search-module" class="search-module active">
-                <input type="text" id="search-input" placeholder="주유소 이름 검색" /><button id="search-button" img
-                    src="/public/pngegg.png" alt="검색" width="20" height="20"></button>
-                <ul id="suggestions"></ul>
-            </div>
+    <!-- 목록 패널 -->
+    <div id="list-panel" class="side-panel" aria-hidden="true">
+      <div class="side-panel__header">
+        <strong>목록</strong>
+        <button type="button" id="list-panel-close" aria-label="닫기">×</button>
+      </div>
+      <div class="side-panel__body">
+        <!-- 여기에 목록 콘텐츠 렌더링 -->
+        준비중입니다…
+      </div>
+    </div>
 
-            <div id="region-search-module" class="search-module hidden">
-                <div id="region-dropdowns" class="dropdown-group">
-                    <select id="select-sido" class="region-select"></select>
-                    <select id="select-sigungu" class="region-select" disabled></select>
-                    <select id="select-eupmyeondong" class="region-select" disabled></select>
-                </div>
-            </div>
+    <!-- 이용 가이드 패널 -->
+    <div id="guide-panel" class="side-panel" aria-hidden="true">
+      <div class="side-panel__header">
+        <strong>이용 가이드</strong>
+        <button type="button" id="guide-panel-close" aria-label="닫기">
+          ×
+        </button>
+      </div>
+      <div class="side-panel__body guide-body">
+        <!-- 카드: 검색하기 -->
+        <section class="guide-card is-blue">
+          <div class="guide-card__thumb">
+            <!-- 돋보기 아이콘 -->
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+          <div class="guide-card__content">
+            <h3>검색하기</h3>
+            <p>주유소의 이름이나 지역을 검색해 폐주유소를 찾아보세요.</p>
+          </div>
+        </section>
+
+        <!-- 카드: 해결방안 보기 -->
+        <section class="guide-card is-pink">
+          <div class="guide-card__thumb">
+            <!-- 주유 아이콘 -->
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M3 21V7a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v14H3z"
+                fill="currentColor"
+                opacity=".15"
+              />
+              <path
+                d="M3 21V7a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v14M6 10h7M6 14h7M19 9l2 2v7a3 3 0 0 1-3 3h-2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <div class="guide-card__content">
+            <h3>해결방안 보기</h3>
+            <p>
+              폐주유소를 클릭해 해당 장소의 <strong>추천 활용방안</strong>을
+              확인하세요.
+            </p>
+          </div>
+        </section>
+
+        <!-- 카드: 보고서 다운받기 -->
+        <section class="guide-card is-green">
+          <div class="guide-card__thumb">
+            <!-- 리포트 아이콘 -->
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M6 3h8l4 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"
+                fill="currentColor"
+                opacity=".15"
+              />
+              <path
+                d="M14 3v5h5M8 12h8M8 16h5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <div class="guide-card__content">
+            <h3>보고서 다운받기</h3>
+            <p>
+              추천의 근거가 되는 지표가 담긴 <strong>보고서</strong>를
+              내려받아보세요.
+            </p>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="search-container">
+      <div id="search-tabs" class="search-tabs">
+        <button id="tab-station" class="active">주유소 검색</button>
+        <button id="tab-region">지역 검색</button>
+      </div>
+      <div id="search-content-container">
+        <div id="station-search-module" class="search-module active">
+          <input
+            type="text"
+            id="search-input"
+            placeholder="주유소 이름 검색"
+          /><button
+            id="search-button"
+            img
+            src="/public/pngegg.png"
+            alt="검색"
+            width="20"
+            height="20"
+          ></button>
+          <ul id="suggestions"></ul>
         </div>
+
+        <div id="region-search-module" class="search-module hidden">
+          <div id="region-dropdowns" class="dropdown-group">
+            <select id="select-sido" class="region-select"></select>
+            <select id="select-sigungu" class="region-select" disabled></select>
+            <select
+              id="select-eupmyeondong"
+              class="region-select"
+              disabled
+            ></select>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="map"></div>
 
     <script>
-        async function loadKakao() {
-            let apiKey;
-            const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
-            if (isLocal) {
-                apiKey = "";
-                console.log(" Local Kakao Key 사용중");
-            }
-            else {
-                try {
-                    const res = await fetch("/api/kakao");
-                    const data = await res.json();
-                    apiKey = data.key;
-                    console.log(" Vercel Key 사용중");
-                } catch (err) {
-                    console.error("서버에서 키 받기 실패", err);
-                    return;
-                }
-            }
-            const script = document.createElement("script");
-            script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${apiKey}&libraries=services,clusterer`;
-            script.onload = () => {
-                console.log("✅ SDK script loaded:", !!window.kakao);
-                kakao.maps.load(() => {
-                    console.log("✅ kakao.maps.load callback fired");
-                    initMap();
-                });
-            };
+      async function loadKakao() {
+        let apiKey;
+        const isLocal =
+          location.hostname === 'localhost' ||
+          location.hostname === '127.0.0.1';
+        if (isLocal) {
+          apiKey = '';
+          console.log(' Local Kakao Key 사용중');
+        } else {
+          try {
+            const res = await fetch('/api/kakao');
+            const data = await res.json();
+            apiKey = data.key;
+            console.log(' Vercel Key 사용중');
+          } catch (err) {
+            console.error('서버에서 키 받기 실패', err);
+            return;
+          }
+        }
+        const script = document.createElement('script');
+        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${apiKey}&libraries=services,clusterer`;
+        script.onload = () => {
+          console.log('✅ SDK script loaded:', !!window.kakao);
+          kakao.maps.load(() => {
+            console.log('✅ kakao.maps.load callback fired');
+            initMap();
+          });
+        };
 
-            document.head.appendChild(script);
+        document.head.appendChild(script);
+      }
+
+      loadKakao();
+      let openOverlay = null;
+      let closeTimer = null;
+      function showDetailPanel(station) {
+        document.getElementById('sidebar-name').textContent = station.name;
+        document.getElementById('sidebar-addr').textContent = station.addr;
+        document.getElementById('sidebar-status').textContent = station.status;
+
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.remove('hidden');
+
+        const pos = new kakao.maps.LatLng(station.lat, station.lng);
+        const container = document.getElementById('roadview');
+        container.innerHTML = '';
+        const rv = new kakao.maps.Roadview(container);
+        const rvc = new kakao.maps.RoadviewClient();
+
+        rvc.getNearestPanoId(pos, 50, (panoId) => {
+          if (panoId) rv.setPanoId(panoId, pos);
+          else
+            container.innerHTML =
+              "<p style='padding:25px;text-align:center'>로드뷰 없음</p>";
+        });
+      }
+      async function initMap() {
+        let defaultCenter = new kakao.maps.LatLng(36.5, 127.8);
+        let defaultLevel = 12;
+
+        const savedCenter = localStorage.getItem('map_center');
+        const savedLevel = localStorage.getItem('map_level');
+
+        if (savedCenter) {
+          const { lat, lng } = JSON.parse(savedCenter);
+          defaultCenter = new kakao.maps.LatLng(lat, lng);
+        }
+        if (savedLevel) defaultLevel = parseInt(savedLevel);
+
+        const map = new kakao.maps.Map(document.getElementById('map'), {
+          center: defaultCenter,
+          level: defaultLevel,
+        });
+
+        kakao.maps.event.addListener(map, 'center_changed', () => {
+          const center = map.getCenter();
+          const level = map.getLevel();
+          localStorage.setItem(
+            'map_center',
+            JSON.stringify({ lat: center.getLat(), lng: center.getLng() })
+          );
+          localStorage.setItem('map_level', level);
+        });
+
+        const clusterer = new kakao.maps.MarkerClusterer({
+          map,
+          averageCenter: true,
+          minLevel: 7,
+          disableClickZoom: false,
+        });
+
+        const CSV_FILE = '/public/station.csv';
+        const stations = [];
+        const markers = [];
+        let polygons = [];
+
+        const geoSources = {
+          sido: '/public/ctprvn_wgs84.json',
+          sig: '/public/sig_wgs84_simplified.json',
+          emd: '/public/HangJeongDong_ver20250401_simplified.json',
+        };
+        const geoData = {};
+
+        for (const [key, path] of Object.entries(geoSources)) {
+          try {
+            const res = await fetch(path);
+            geoData[key] = await res.json();
+            console.log(
+              `✅ ${key} 레이어 로드 완료:`,
+              geoData[key].features.length
+            );
+          } catch (err) {
+            console.error(`${key} GeoJSON 로드 실패`, err);
+          }
         }
 
-        loadKakao();
-        let openOverlay = null;
-        let closeTimer = null;
-        function showDetailPanel(station) {
-            document.getElementById("sidebar-name").textContent = station.name;
-            document.getElementById("sidebar-addr").textContent = station.addr;
-            document.getElementById("sidebar-status").textContent = station.status;
+        Papa.parse(CSV_FILE, {
+          download: true,
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            const data = results.data;
+            const headers = results.meta.fields || Object.keys(data[0]);
 
-            const sidebar = document.getElementById("sidebar");
-            sidebar.classList.remove("hidden");
-
-            const pos = new kakao.maps.LatLng(station.lat, station.lng);
-            const container = document.getElementById("roadview");
-            container.innerHTML = "";
-            const rv = new kakao.maps.Roadview(container);
-            const rvc = new kakao.maps.RoadviewClient();
-
-            rvc.getNearestPanoId(pos, 50, (panoId) => {
-                if (panoId) rv.setPanoId(panoId, pos);
-                else container.innerHTML = "<p style='padding:25px;text-align:center'>로드뷰 없음</p>";
-            });
-        }
-        async function initMap() {
-            let defaultCenter = new kakao.maps.LatLng(36.5, 127.8);
-            let defaultLevel = 12;
-
-            const savedCenter = localStorage.getItem("map_center");
-            const savedLevel = localStorage.getItem("map_level");
-
-            if (savedCenter) {
-                const { lat, lng } = JSON.parse(savedCenter);
-                defaultCenter = new kakao.maps.LatLng(lat, lng);
-            }
-            if (savedLevel) defaultLevel = parseInt(savedLevel);
-
-            const map = new kakao.maps.Map(document.getElementById("map"), {
-                center: defaultCenter,
-                level: defaultLevel
-            });
-
-
-            kakao.maps.event.addListener(map, "center_changed", () => {
-                const center = map.getCenter();
-                const level = map.getLevel();
-                localStorage.setItem("map_center", JSON.stringify({ lat: center.getLat(), lng: center.getLng() }));
-                localStorage.setItem("map_level", level);
-            });
-
-
-            const clusterer = new kakao.maps.MarkerClusterer({
-                map,
-                averageCenter: true,
-                minLevel: 7,
-                disableClickZoom: false
-            });
-
-            const CSV_FILE = "/public/station.csv";
-            const stations = [];
-            const markers = [];
-            let polygons = [];
-
-            const geoSources = {
-                sido: "/public/ctprvn_wgs84.json",
-                sig: "/public/sig_wgs84_simplified.json",
-                emd: "/public/HangJeongDong_ver20250401_simplified.json"
-            };
-            const geoData = {};
-
-            for (const [key, path] of Object.entries(geoSources)) {
-                try {
-                    const res = await fetch(path);
-                    geoData[key] = await res.json();
-                    console.log(`✅ ${key} 레이어 로드 완료:`, geoData[key].features.length);
-                } catch (err) {
-                    console.error(`${key} GeoJSON 로드 실패`, err);
-                }
+            function findColumnName(headers, candidates) {
+              for (const c of candidates) {
+                const idx = headers.findIndex(
+                  (h) => h && h.toLowerCase() === c.toLowerCase()
+                );
+                if (idx !== -1) return headers[idx];
+              }
+              for (const h of headers) {
+                if (!h) continue;
+                const s = h.toLowerCase();
+                for (const c of candidates)
+                  if (s.includes(c.toLowerCase())) return h;
+              }
+              return null;
             }
 
-            Papa.parse(CSV_FILE, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: (results) => {
-                    const data = results.data;
-                    const headers = results.meta.fields || Object.keys(data[0]);
+            const statusCol = findColumnName(headers, ['field4']);
+            const nameCol = findColumnName(headers, ['field5']);
+            const addrCol = findColumnName(headers, ['field6']);
+            const latCol = findColumnName(headers, ['_Y']);
+            const lngCol = findColumnName(headers, ['_X']);
 
-                    function findColumnName(headers, candidates) {
-                        for (const c of candidates) {
-                            const idx = headers.findIndex(h => h && h.toLowerCase() === c.toLowerCase());
-                            if (idx !== -1) return headers[idx];
-                        }
-                        for (const h of headers) {
-                            if (!h) continue;
-                            const s = h.toLowerCase();
-                            for (const c of candidates) if (s.includes(c.toLowerCase())) return h;
-                        }
-                        return null;
-                    }
+            const tabStation = document.getElementById('tab-station');
+            const tabRegion = document.getElementById('tab-region');
+            const stationModule = document.getElementById(
+              'station-search-module'
+            );
+            const regionModule = document.getElementById(
+              'region-search-module'
+            );
 
-                    const statusCol = findColumnName(headers, ["field4"]);
-                    const nameCol = findColumnName(headers, ["field5"]);
-                    const addrCol = findColumnName(headers, ["field6"]);
-                    const latCol = findColumnName(headers, ["_Y"]);
-                    const lngCol = findColumnName(headers, ["_X"]);
+            // 드롭다운 요소
+            const selectSido = document.getElementById('select-sido');
+            const selectSigungu = document.getElementById('select-sigungu');
+            const selectEupmyeondong = document.getElementById(
+              'select-eupmyeondong'
+            );
 
-                    const tabStation = document.getElementById('tab-station');
-                    const tabRegion = document.getElementById('tab-region');
-                    const stationModule = document.getElementById('station-search-module');
-                    const regionModule = document.getElementById('region-search-module');
+            const seen = new Set();
+            data.reverse().forEach((row, idx) => {
+              const status = row[statusCol] || '';
+              if (!/휴업|폐업/.test(status)) return;
 
-                    // 드롭다운 요소
-                    const selectSido = document.getElementById('select-sido');
-                    const selectSigungu = document.getElementById('select-sigungu');
-                    const selectEupmyeondong = document.getElementById('select-eupmyeondong');
+              const lat = parseFloat(row[latCol]);
+              const lng = parseFloat(row[lngCol]);
+              if (isNaN(lat) || isNaN(lng)) return;
 
-                    const seen = new Set();
-                    data.reverse().forEach((row, idx) => {
-                        const status = row[statusCol] || "";
-                        if (!/휴업|폐업/.test(status)) return;
+              const key = `${lat},${lng}`;
+              if (seen.has(key)) return;
+              seen.add(key);
 
-                        const lat = parseFloat(row[latCol]);
-                        const lng = parseFloat(row[lngCol]);
-                        if (isNaN(lat) || isNaN(lng)) return;
+              const name = row[nameCol] || '';
+              const addr = row[addrCol] || '';
+              stations.push({ name, addr, lat, lng });
 
-                        const key = `${lat},${lng}`;
-                        if (seen.has(key)) return;
-                        seen.add(key);
+              const marker = new kakao.maps.Marker({
+                position: new kakao.maps.LatLng(lat, lng),
+              });
 
-                        const name = row[nameCol] || "";
-                        const addr = row[addrCol] || "";
-                        stations.push({ name, addr, lat, lng });
-
-                        const marker = new kakao.maps.Marker({
-                            position: new kakao.maps.LatLng(lat, lng)
-                        });
-
-                        const color = /폐업/.test(status) ? "#ff5a5f" : "#ffb74d";
-                        const infoHTML = `
+              const color = /폐업/.test(status) ? '#ff5a5f' : '#ffb74d';
+              const infoHTML = `
           <div class="info-window" id="iw-${idx}">
             <div class="info-img"><img src="station_images/대림주유소.jpg" width="234" height="110"></div>
             <div class="info-body">
@@ -243,404 +378,526 @@
             </div>
           </div>
         `;
-                        const overlay = new kakao.maps.CustomOverlay({
-                            position: marker.getPosition(),
-                            content: infoHTML,
-                            yAnchor: 1.5
-                        });
+              const overlay = new kakao.maps.CustomOverlay({
+                position: marker.getPosition(),
+                content: infoHTML,
+                yAnchor: 1.5,
+              });
 
-                        kakao.maps.event.addListener(marker, "mouseover", () => {
-                            if (closeTimer) {
-                                clearTimeout(closeTimer);
-                                closeTimer = null;
-                            }
-                            if (openOverlay) openOverlay.setMap(null);
-                            overlay.setMap(map);
-                            openOverlay = overlay;
-
-                            setTimeout(() => {
-                                const iw = document.getElementById(`iw-${idx}`);
-                                if (!iw) return;
-
-                                iw.addEventListener("mouseenter", () => {
-                                    if (closeTimer) clearTimeout(closeTimer);
-                                });
-                                iw.addEventListener("mouseleave", () => {
-                                    closeTimer = setTimeout(() => {
-                                        if (openOverlay) openOverlay.setMap(null);
-                                        openOverlay = null;
-                                    }, 200);
-                                });
-
-                                iw.addEventListener("click", (e) => {
-                                    e.stopPropagation();
-                                    showDetailPanel({ name, addr, status, lat, lng });
-                                    if (openOverlay) {
-                                        openOverlay.setMap(null);
-                                        openOverlay = null;
-                                    }
-                                });
-                            }, 80);
-                        });
-                        kakao.maps.event.addListener(marker, "mouseout", () => {
-                            closeTimer = setTimeout(() => {
-                                const hoveredCard = document.querySelector(".info-window:hover");
-                                if (!hoveredCard && openOverlay) {
-                                    openOverlay.setMap(null);
-                                    openOverlay = null;
-                                }
-                            }, 200);
-                        });
-
-                        markers.push(marker);
-                    });
-                    clusterer.addMarkers(markers);
-                    connectSearchEvents(stations, map);
-
-                    function switchSearchMode(mode) {
-                        if (mode === 'station') {
-                            tabStation.classList.add('active'); tabRegion.classList.remove('active');
-                            stationModule.classList.remove('hidden'); regionModule.classList.add('hidden');
-                        } else if (mode === 'region') {
-                            tabRegion.classList.add('active'); tabStation.classList.remove('active');
-                            regionModule.classList.remove('hidden'); stationModule.classList.add('hidden');
-                            loadSidoData();
-                        }
-                    }
-
-                    // GeoJSON 데이터 로드 및 드롭다운 채우기
-                    function loadSidoData() {
-                        const sidoData = geoData.sido.features;
-                        selectSido.innerHTML = '<option value="">-- 시/도 선택 --</option>';
-                        selectSigungu.innerHTML = '<option value="">-- 시/군/구 선택 --</option>';
-                        selectEupmyeondong.innerHTML = '<option value="">-- 읍/면/동 선택 --</option>';
-                        selectSigungu.disabled = true;
-                        selectEupmyeondong.disabled = true;
-
-                        sidoData.forEach(f => {
-                            const name = f.properties['CTP_KOR_NM'];
-                            const option = new Option(name, name);
-                            selectSido.add(option);
-                        });
-                    }
-
-                    function loadSigunguData(selectedSido) {
-                        const sigunguData = geoData.sig.features;
-                        selectSigungu.innerHTML = '<option value="">-- 시/군/구 선택 --</option>';
-                        selectEupmyeondong.innerHTML = '<option value="">-- 읍/면/동 선택 --</option>';
-                        selectEupmyeondong.disabled = true;
-
-                        const sidoCodeMap = {
-                            "서울특별시": "11",
-                            "부산광역시": "26",
-                            "대구광역시": "27",
-                            "인천광역시": "28",
-                            "광주광역시": "29",
-                            "대전광역시": "30",
-                            "울산광역시": "31",
-                            "세종특별자치시": "36",
-                            "경기도": "41",
-                            "강원특별자치도": "51",
-                            "충청북도": "43",
-                            "충청남도": "44",
-                            "전북특별자치도": "52",
-                            "전라남도": "46",
-                            "경상북도": "47",
-                            "경상남도": "48",
-                            "제주특별자치도": "50"
-                        };
-                        const sidoPrefix = sidoCodeMap[selectedSido];
-                        if (!sidoPrefix) {
-                            console.warn("⚠️ 시도 코드 매칭 실패:", selectedSido);
-                            return;
-                        }
-                        const filteredSigungu = sigunguData.filter(f => {
-                            const sigCd = String(f.properties['SIG_CD'] || "").trim();
-                            return sigCd.substring(0, 2) === sidoPrefix;
-                        });
-
-                        filteredSigungu.forEach(f => {
-                            const name = f.properties['SIG_KOR_NM'];
-                            const option = new Option(name, name);
-                            selectSigungu.add(option);
-                        });
-
-                        if (selectSigungu.options.length > 1) {
-                            selectSigungu.disabled = false;
-                        }
-                    }
-
-                    function loadEupmyeondongData(selectedSigungu) {
-                        const emdData = geoData.emd.features;
-                        selectEupmyeondong.innerHTML = '<option value="">-- 읍/면/동 선택 --</option>';
-                        const selectedSido = selectSido.value; // ✅ 추가
-                        if (!selectedSido || !selectedSigungu) return;
-
-                        const sigFeature = geoData.sig.features.find(f =>
-                            f.properties['SIG_KOR_NM'] === selectedSigungu
-                        );
-                        const filteredEmd = emdData.filter(f => {
-                            const full = f.properties['adm_nm'] || "";
-                            return full.startsWith(`${selectedSido} ${selectedSigungu}`);
-                        });
-
-                        filteredEmd.forEach(f => {
-                            const fullName = f.properties['adm_nm'] || "";
-                            const emdName = fullName.split(" ").pop();
-                            const option = new Option(emdName, fullName); // ✅ value는 전체 행정명
-                            selectEupmyeondong.add(option);
-                        });
-
-                        if (selectEupmyeondong.options.length > 1) {
-                            selectEupmyeondong.disabled = false;
-                        }
-                    }
-
-                    // 검색 이벤트 연결 및 드롭다운 체인
-                    function connectSearchEvents(stations, map) {
-                        tabStation.addEventListener('click', () => switchSearchMode('station'));
-                        tabRegion.addEventListener('click', () => switchSearchMode('region'));
-
-
-                        selectSido.addEventListener('change', () => {
-                            const selectedSido = selectSido.value;
-                            loadSigunguData(selectedSido);
-                            drawRegion(selectedSido, map);
-                        });
-
-                        selectSigungu.addEventListener('change', () => {
-                            const selectedSigungu = selectSigungu.value;
-                            loadEupmyeondongData(selectedSigungu);
-                            drawRegion(selectedSigungu, map);
-                        });
-
-                        selectEupmyeondong.addEventListener('change', () => {
-                            const selectedEmd = selectEupmyeondong.value;
-                            drawRegion(selectedEmd, map);
-                        });
-
-                        const searchButton = document.getElementById("search-button");
-                        const searchInput = document.getElementById("search-input");
-                        // 텍스트 검색 버튼 연결
-                        searchButton.onclick = () => {
-                            if (tabStation.classList.contains('active')) {
-                                handleStationSearch(stations, map);
-                            }
-                        };
-
-                        searchInput.addEventListener("keypress", (e) => {
-                            if (e.key === "Enter" && tabStation.classList.contains("active")) {
-                                handleStationSearch(stations, map);
-                            }
-                        });
-                    }
-
-                    // 최종 검색 실행 (텍스트 검색)
-                    function handleStationSearch(stations, map) {
-                        const searchInput = document.getElementById("search-input");
-                        const keyword = searchInput.value.trim();
-                        const list = document.getElementById("suggestions");
-                        list.innerHTML = "";
-                        if (!keyword) return;
-
-                        const foundStation = stations.filter(s => s.name && s.name.toLowerCase().startsWith(keyword.toLowerCase()));
-                        if (foundStation.length === 1) {
-                            const pos = new kakao.maps.LatLng(foundStation.lat, foundStation.lng);
-                            map.setLevel(4);
-                            map.panTo(pos);
-                            return;
-                        }
-                        if (foundStation.length === 0) {
-                            alert("일치하는 주유소가 없습니다.");
-                            return;
-                        }
-                        foundStation.forEach((s, idx) => {
-                            const li = document.createElement("li");
-                            li.textContent = `${s.name} (${s.addr})`;
-                            li.classList.add("suggestion-item");
-                            li.style.cursor = "pointer";
-
-                            // 클릭 시 지도 이동
-                            li.addEventListener("click", () => {
-                                const pos = new kakao.maps.LatLng(s.lat, s.lng);
-                                map.setLevel(4);
-                                map.panTo(pos);
-
-                                // 리스트 닫기
-                                list.innerHTML = "";
-                                document.getElementById("search-input").value = s.name;
-                            });
-
-                            list.appendChild(li);
-                        });
-                    }
-
-                    // 행정구역 검색 실행 (텍스트 -> GeoJSON)
-                    function handleRegionSearch(keyword, map) {
-                        const layers = [
-                            { name: "시도", data: geoData.sido, key: "CTP_KOR_NM" },
-                            { name: "시군구", data: geoData.sig, key: "SIG_KOR_NM" },
-                            { name: "읍면동", data: geoData.emd, key: "adm_nm" }
-                        ];
-                        for (const { name, data, key } of layers) {
-                            if (!data) continue;
-                            const match = data.features.find(f =>
-                                f.properties[key] && f.properties[key].startsWith(keyword)
-                            );
-                            if (match) {
-                                console.log(`✅ ${name} 매칭됨:`, match.properties[key]);
-                                try {
-                                    drawPolygon(match, map);
-                                } catch (e) {
-                                    console.error("❌ drawPolygon 함수 실행 중 치명적 오류 발생:", e);
-                                }
-                                return true;
-                            }
-                        }
-                        return false;
-                    }
-
-                    function drawRegion(name) {
-                        const sidoCodeMap = {
-                            "서울특별시": "11",
-                            "부산광역시": "26",
-                            "대구광역시": "27",
-                            "인천광역시": "28",
-                            "광주광역시": "29",
-                            "대전광역시": "30",
-                            "울산광역시": "31",
-                            "세종특별자치시": "36",
-                            "경기도": "41",
-                            "강원특별자치도": "51",
-                            "충청북도": "43",
-                            "충청남도": "44",
-                            "전북특별자치도": "52",
-                            "전라남도": "46",
-                            "경상북도": "47",
-                            "경상남도": "48",
-                            "제주특별자치도": "50"
-                        };
-                        const selectedSido = document.getElementById("select-sido")?.value || "";
-                        const selectedSigungu = document.getElementById("select-sigungu")?.value || "";
-                        const selectedEmd = document.getElementById("select-eupmyeondong")?.value || "";
-                        const sidoPrefix = sidoCodeMap[selectedSido];
-
-                        let match = null;
-
-                        // 1️⃣ 시도
-                        match = geoData.sido.features.find(f =>
-                            f.properties["CTP_KOR_NM"] === name
-                        );
-
-                        if (selectedEmd) {
-                            match = geoData.emd.features.find(f => {
-                                const full = f.properties["adm_nm"]?.trim() || "";
-                                return full === selectedEmd.trim() || full.endsWith(selectedEmd.trim());
-                            });
-
-                        }
-
-                        // 2️⃣ 읍면동 매칭이 없을 때만 시군구로 fallback
-                        if (!match && selectedSigungu) {
-                            match = geoData.sig.features.find(f =>
-                                f.properties["SIG_KOR_NM"] === selectedSigungu &&
-                                f.properties["SIG_CD"].startsWith(sidoPrefix)
-                            );
-
-                        }
-
-                        if (match) {
-                            drawPolygon(match);
-                            return;
-                        }
-
-                    }
-
-                    function drawPolygon(feature) {
-                        polygons.forEach(p => p.setMap(null));
-                        polygons = [];
-
-                        if (!feature || !feature.geometry || !feature.geometry.type) return;
-
-                        const polygonPaths = [];
-
-                        if (feature.geometry.type === "Polygon") {
-                            const coords = feature.geometry.coordinates[0];
-                            const path = coords.map(([x, y]) => new kakao.maps.LatLng(y, x));
-                            polygonPaths.push(path);
-                        }
-                        else if (feature.geometry.type === "MultiPolygon") {
-                            feature.geometry.coordinates.forEach(polygonBoundarySet => {
-                                const outerBoundaryCoords = polygonBoundarySet[0];
-                                if (outerBoundaryCoords && outerBoundaryCoords.length > 0) {
-                                    const path = outerBoundaryCoords.map(([x, y]) => {
-                                        const lat = parseFloat(y);
-                                        const lng = parseFloat(x);
-                                        if (isNaN(lat) || isNaN(lng)) return null;
-                                        return new kakao.maps.LatLng(lat, lng);
-                                    }).filter(p => p !== null);
-                                    if (path.length > 0) polygonPaths.push(path);
-                                }
-                            });
-                        }
-                        else {
-                            console.warn("지원하지 않는 geometry 타입:", feature.geometry.type);
-                            return;
-                        }
-
-                        // ✅ forEach 밖으로 이동 (Polygon과 MultiPolygon 모두 공통)
-                        if (polygonPaths.length > 0) {
-                            const polygon = new kakao.maps.Polygon({
-                                path: polygonPaths,
-                                strokeWeight: 2,
-                                strokeColor: "#00695c",
-                                strokeOpacity: 0.8,
-                                fillColor: "rgba(0,150,136,0.35)",
-                                fillOpacity: 0.6
-                            });
-
-                            polygon.setMap(map);
-                            polygons.push(polygon);
-
-                            const bounds = new kakao.maps.LatLngBounds();
-                            polygonPaths.flat().forEach(p => bounds.extend(p));
-                            map.setBounds(bounds);
-                            map.relayout();
-                        }
-
-                        // --- 3. 그 외 타입 처리 ---
-                        else {
-                            console.error("지원하지 않는 GeoJSON geometry 타입:", feature.geometry.type);
-                            return;
-                        }
-
-                        // ⭐⭐⭐ 이하는 GeoJSON 처리 로직이 모두 끝난 후 실행됩니다. ⭐⭐⭐
-                        if (polygonPaths.length === 0) return;
-
-                        // ⭐ Kakao Maps Polygon은 MultiPolygon 처리를 위해 경로 배열의 배열을 허용합니다.
-
-                    }
+              kakao.maps.event.addListener(marker, 'mouseover', () => {
+                if (closeTimer) {
+                  clearTimeout(closeTimer);
+                  closeTimer = null;
                 }
+                if (openOverlay) openOverlay.setMap(null);
+                overlay.setMap(map);
+                openOverlay = overlay;
+
+                setTimeout(() => {
+                  const iw = document.getElementById(`iw-${idx}`);
+                  if (!iw) return;
+
+                  iw.addEventListener('mouseenter', () => {
+                    if (closeTimer) clearTimeout(closeTimer);
+                  });
+                  iw.addEventListener('mouseleave', () => {
+                    closeTimer = setTimeout(() => {
+                      if (openOverlay) openOverlay.setMap(null);
+                      openOverlay = null;
+                    }, 200);
+                  });
+
+                  iw.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showDetailPanel({ name, addr, status, lat, lng });
+                    if (openOverlay) {
+                      openOverlay.setMap(null);
+                      openOverlay = null;
+                    }
+                  });
+                }, 80);
+              });
+              kakao.maps.event.addListener(marker, 'mouseout', () => {
+                closeTimer = setTimeout(() => {
+                  const hoveredCard =
+                    document.querySelector('.info-window:hover');
+                  if (!hoveredCard && openOverlay) {
+                    openOverlay.setMap(null);
+                    openOverlay = null;
+                  }
+                }, 200);
+              });
+
+              markers.push(marker);
+            });
+            clusterer.addMarkers(markers);
+            connectSearchEvents(stations, map);
+
+            function switchSearchMode(mode) {
+              if (mode === 'station') {
+                tabStation.classList.add('active');
+                tabRegion.classList.remove('active');
+                stationModule.classList.remove('hidden');
+                regionModule.classList.add('hidden');
+              } else if (mode === 'region') {
+                tabRegion.classList.add('active');
+                tabStation.classList.remove('active');
+                regionModule.classList.remove('hidden');
+                stationModule.classList.add('hidden');
+                loadSidoData();
+              }
             }
-            );
-            document.getElementById("sidebar-close").onclick = () =>
-                document.getElementById("sidebar").classList.add("hidden");
-        }
+
+            // GeoJSON 데이터 로드 및 드롭다운 채우기
+            function loadSidoData() {
+              const sidoData = geoData.sido.features;
+              selectSido.innerHTML =
+                '<option value="">-- 시/도 선택 --</option>';
+              selectSigungu.innerHTML =
+                '<option value="">-- 시/군/구 선택 --</option>';
+              selectEupmyeondong.innerHTML =
+                '<option value="">-- 읍/면/동 선택 --</option>';
+              selectSigungu.disabled = true;
+              selectEupmyeondong.disabled = true;
+
+              sidoData.forEach((f) => {
+                const name = f.properties['CTP_KOR_NM'];
+                const option = new Option(name, name);
+                selectSido.add(option);
+              });
+            }
+
+            function loadSigunguData(selectedSido) {
+              const sigunguData = geoData.sig.features;
+              selectSigungu.innerHTML =
+                '<option value="">-- 시/군/구 선택 --</option>';
+              selectEupmyeondong.innerHTML =
+                '<option value="">-- 읍/면/동 선택 --</option>';
+              selectEupmyeondong.disabled = true;
+
+              const sidoCodeMap = {
+                서울특별시: '11',
+                부산광역시: '26',
+                대구광역시: '27',
+                인천광역시: '28',
+                광주광역시: '29',
+                대전광역시: '30',
+                울산광역시: '31',
+                세종특별자치시: '36',
+                경기도: '41',
+                강원특별자치도: '51',
+                충청북도: '43',
+                충청남도: '44',
+                전북특별자치도: '52',
+                전라남도: '46',
+                경상북도: '47',
+                경상남도: '48',
+                제주특별자치도: '50',
+              };
+              const sidoPrefix = sidoCodeMap[selectedSido];
+              if (!sidoPrefix) {
+                console.warn('⚠️ 시도 코드 매칭 실패:', selectedSido);
+                return;
+              }
+              const filteredSigungu = sigunguData.filter((f) => {
+                const sigCd = String(f.properties['SIG_CD'] || '').trim();
+                return sigCd.substring(0, 2) === sidoPrefix;
+              });
+
+              filteredSigungu.forEach((f) => {
+                const name = f.properties['SIG_KOR_NM'];
+                const option = new Option(name, name);
+                selectSigungu.add(option);
+              });
+
+              if (selectSigungu.options.length > 1) {
+                selectSigungu.disabled = false;
+              }
+            }
+
+            function loadEupmyeondongData(selectedSigungu) {
+              const emdData = geoData.emd.features;
+              selectEupmyeondong.innerHTML =
+                '<option value="">-- 읍/면/동 선택 --</option>';
+              const selectedSido = selectSido.value; // ✅ 추가
+              if (!selectedSido || !selectedSigungu) return;
+
+              const sigFeature = geoData.sig.features.find(
+                (f) => f.properties['SIG_KOR_NM'] === selectedSigungu
+              );
+              const filteredEmd = emdData.filter((f) => {
+                const full = f.properties['adm_nm'] || '';
+                return full.startsWith(`${selectedSido} ${selectedSigungu}`);
+              });
+
+              filteredEmd.forEach((f) => {
+                const fullName = f.properties['adm_nm'] || '';
+                const emdName = fullName.split(' ').pop();
+                const option = new Option(emdName, fullName); // ✅ value는 전체 행정명
+                selectEupmyeondong.add(option);
+              });
+
+              if (selectEupmyeondong.options.length > 1) {
+                selectEupmyeondong.disabled = false;
+              }
+            }
+
+            // 검색 이벤트 연결 및 드롭다운 체인
+            function connectSearchEvents(stations, map) {
+              tabStation.addEventListener('click', () =>
+                switchSearchMode('station')
+              );
+              tabRegion.addEventListener('click', () =>
+                switchSearchMode('region')
+              );
+
+              selectSido.addEventListener('change', () => {
+                const selectedSido = selectSido.value;
+                loadSigunguData(selectedSido);
+                drawRegion(selectedSido, map);
+              });
+
+              selectSigungu.addEventListener('change', () => {
+                const selectedSigungu = selectSigungu.value;
+                loadEupmyeondongData(selectedSigungu);
+                drawRegion(selectedSigungu, map);
+              });
+
+              selectEupmyeondong.addEventListener('change', () => {
+                const selectedEmd = selectEupmyeondong.value;
+                drawRegion(selectedEmd, map);
+              });
+
+              const searchButton = document.getElementById('search-button');
+              const searchInput = document.getElementById('search-input');
+              // 텍스트 검색 버튼 연결
+              searchButton.onclick = () => {
+                if (tabStation.classList.contains('active')) {
+                  handleStationSearch(stations, map);
+                }
+              };
+
+              searchInput.addEventListener('keypress', (e) => {
+                if (
+                  e.key === 'Enter' &&
+                  tabStation.classList.contains('active')
+                ) {
+                  handleStationSearch(stations, map);
+                }
+              });
+            }
+
+            // 최종 검색 실행 (텍스트 검색)
+            function handleStationSearch(stations, map) {
+              const searchInput = document.getElementById('search-input');
+              const keyword = searchInput.value.trim();
+              const list = document.getElementById('suggestions');
+              list.innerHTML = '';
+              if (!keyword) return;
+
+              const foundStation = stations.filter(
+                (s) =>
+                  s.name &&
+                  s.name.toLowerCase().startsWith(keyword.toLowerCase())
+              );
+              if (foundStation.length === 1) {
+                const pos = new kakao.maps.LatLng(
+                  foundStation.lat,
+                  foundStation.lng
+                );
+                map.setLevel(4);
+                map.panTo(pos);
+                return;
+              }
+              if (foundStation.length === 0) {
+                alert('일치하는 주유소가 없습니다.');
+                return;
+              }
+              foundStation.forEach((s, idx) => {
+                const li = document.createElement('li');
+                li.textContent = `${s.name} (${s.addr})`;
+                li.classList.add('suggestion-item');
+                li.style.cursor = 'pointer';
+
+                // 클릭 시 지도 이동
+                li.addEventListener('click', () => {
+                  const pos = new kakao.maps.LatLng(s.lat, s.lng);
+                  map.setLevel(4);
+                  map.panTo(pos);
+
+                  // 리스트 닫기
+                  list.innerHTML = '';
+                  document.getElementById('search-input').value = s.name;
+                });
+
+                list.appendChild(li);
+              });
+            }
+
+            // 행정구역 검색 실행 (텍스트 -> GeoJSON)
+            function handleRegionSearch(keyword, map) {
+              const layers = [
+                { name: '시도', data: geoData.sido, key: 'CTP_KOR_NM' },
+                { name: '시군구', data: geoData.sig, key: 'SIG_KOR_NM' },
+                { name: '읍면동', data: geoData.emd, key: 'adm_nm' },
+              ];
+              for (const { name, data, key } of layers) {
+                if (!data) continue;
+                const match = data.features.find(
+                  (f) =>
+                    f.properties[key] && f.properties[key].startsWith(keyword)
+                );
+                if (match) {
+                  console.log(`✅ ${name} 매칭됨:`, match.properties[key]);
+                  try {
+                    drawPolygon(match, map);
+                  } catch (e) {
+                    console.error(
+                      '❌ drawPolygon 함수 실행 중 치명적 오류 발생:',
+                      e
+                    );
+                  }
+                  return true;
+                }
+              }
+              return false;
+            }
+
+            function drawRegion(name) {
+              const sidoCodeMap = {
+                서울특별시: '11',
+                부산광역시: '26',
+                대구광역시: '27',
+                인천광역시: '28',
+                광주광역시: '29',
+                대전광역시: '30',
+                울산광역시: '31',
+                세종특별자치시: '36',
+                경기도: '41',
+                강원특별자치도: '51',
+                충청북도: '43',
+                충청남도: '44',
+                전북특별자치도: '52',
+                전라남도: '46',
+                경상북도: '47',
+                경상남도: '48',
+                제주특별자치도: '50',
+              };
+              const selectedSido =
+                document.getElementById('select-sido')?.value || '';
+              const selectedSigungu =
+                document.getElementById('select-sigungu')?.value || '';
+              const selectedEmd =
+                document.getElementById('select-eupmyeondong')?.value || '';
+              const sidoPrefix = sidoCodeMap[selectedSido];
+
+              let match = null;
+
+              // 1️⃣ 시도
+              match = geoData.sido.features.find(
+                (f) => f.properties['CTP_KOR_NM'] === name
+              );
+
+              if (selectedEmd) {
+                match = geoData.emd.features.find((f) => {
+                  const full = f.properties['adm_nm']?.trim() || '';
+                  return (
+                    full === selectedEmd.trim() ||
+                    full.endsWith(selectedEmd.trim())
+                  );
+                });
+              }
+
+              // 2️⃣ 읍면동 매칭이 없을 때만 시군구로 fallback
+              if (!match && selectedSigungu) {
+                match = geoData.sig.features.find(
+                  (f) =>
+                    f.properties['SIG_KOR_NM'] === selectedSigungu &&
+                    f.properties['SIG_CD'].startsWith(sidoPrefix)
+                );
+              }
+
+              if (match) {
+                drawPolygon(match);
+                return;
+              }
+            }
+
+            function drawPolygon(feature) {
+              polygons.forEach((p) => p.setMap(null));
+              polygons = [];
+
+              if (!feature || !feature.geometry || !feature.geometry.type)
+                return;
+
+              const polygonPaths = [];
+
+              if (feature.geometry.type === 'Polygon') {
+                const coords = feature.geometry.coordinates[0];
+                const path = coords.map(
+                  ([x, y]) => new kakao.maps.LatLng(y, x)
+                );
+                polygonPaths.push(path);
+              } else if (feature.geometry.type === 'MultiPolygon') {
+                feature.geometry.coordinates.forEach((polygonBoundarySet) => {
+                  const outerBoundaryCoords = polygonBoundarySet[0];
+                  if (outerBoundaryCoords && outerBoundaryCoords.length > 0) {
+                    const path = outerBoundaryCoords
+                      .map(([x, y]) => {
+                        const lat = parseFloat(y);
+                        const lng = parseFloat(x);
+                        if (isNaN(lat) || isNaN(lng)) return null;
+                        return new kakao.maps.LatLng(lat, lng);
+                      })
+                      .filter((p) => p !== null);
+                    if (path.length > 0) polygonPaths.push(path);
+                  }
+                });
+              } else {
+                console.warn(
+                  '지원하지 않는 geometry 타입:',
+                  feature.geometry.type
+                );
+                return;
+              }
+
+              // ✅ forEach 밖으로 이동 (Polygon과 MultiPolygon 모두 공통)
+              if (polygonPaths.length > 0) {
+                const polygon = new kakao.maps.Polygon({
+                  path: polygonPaths,
+                  strokeWeight: 2,
+                  strokeColor: '#00695c',
+                  strokeOpacity: 0.8,
+                  fillColor: 'rgba(0,150,136,0.35)',
+                  fillOpacity: 0.6,
+                });
+
+                polygon.setMap(map);
+                polygons.push(polygon);
+
+                const bounds = new kakao.maps.LatLngBounds();
+                polygonPaths.flat().forEach((p) => bounds.extend(p));
+                map.setBounds(bounds);
+                map.relayout();
+              }
+
+              // --- 3. 그 외 타입 처리 ---
+              else {
+                console.error(
+                  '지원하지 않는 GeoJSON geometry 타입:',
+                  feature.geometry.type
+                );
+                return;
+              }
+
+              // ⭐⭐⭐ 이하는 GeoJSON 처리 로직이 모두 끝난 후 실행됩니다. ⭐⭐⭐
+              if (polygonPaths.length === 0) return;
+
+              // ⭐ Kakao Maps Polygon은 MultiPolygon 처리를 위해 경로 배열의 배열을 허용합니다.
+            }
+          },
+        });
+        document.getElementById('sidebar-close').onclick = () =>
+          document.getElementById('sidebar').classList.add('hidden');
+      }
     </script>
+
+    <script>
+      (function () {
+        // 버튼 & 요소
+        const listBtn = document.getElementById('nav-list-btn');
+        const guideBtn = document.getElementById('nav-guide-btn');
+        const searchBtn = document.getElementById('nav-search-btn'); // 다른 아이콘 누르면 닫기용
+        const panels = {
+          list: document.getElementById('list-panel'),
+          guide: document.getElementById('guide-panel'),
+        };
+        const closeBtns = {
+          list: document.getElementById('list-panel-close'),
+          guide: document.getElementById('guide-panel-close'),
+        };
+        const searchBox = document.querySelector('.search-container');
+
+        // 유틸
+        const isOpen = (p) => p && p.classList.contains('is-open');
+
+        function anyOpen() {
+          return Object.values(panels).some((p) => p && isOpen(p));
+        }
+
+        function pushSearch(on) {
+          if (!searchBox) return;
+          if (on) searchBox.classList.add('pushed-by-list');
+          else searchBox.classList.remove('pushed-by-list');
+        }
+
+        function openPanel(panel) {
+          if (!panel) return;
+          closeAllPanels(); // ✅ 다른 패널은 자동으로 닫힘
+          panel.classList.add('is-open');
+          panel.setAttribute('aria-hidden', 'false');
+          pushSearch(true);
+        }
+
+        function closePanel(panel) {
+          if (!panel) return;
+          panel.classList.remove('is-open');
+          panel.setAttribute('aria-hidden', 'true');
+          if (!anyOpen()) pushSearch(false); // 둘 다 닫히면 검색창 원위치
+        }
+
+        function closeAllPanels() {
+          Object.values(panels).forEach((p) => {
+            if (p && isOpen(p)) {
+              p.classList.remove('is-open');
+              p.setAttribute('aria-hidden', 'true');
+            }
+          });
+          pushSearch(false);
+        }
+
+        // 토글
+        function toggle(panel) {
+          if (!panel) return;
+          if (isOpen(panel)) closePanel(panel);
+          else openPanel(panel);
+        }
+
+        // 이벤트 바인딩
+        if (listBtn)
+          listBtn.addEventListener('click', () => toggle(panels.list));
+        if (guideBtn)
+          guideBtn.addEventListener('click', () => toggle(panels.guide));
+        if (searchBtn) searchBtn.addEventListener('click', closeAllPanels); // 🔍 누르면 닫기
+
+        if (closeBtns.list)
+          closeBtns.list.addEventListener('click', () =>
+            closePanel(panels.list)
+          );
+        if (closeBtns.guide)
+          closeBtns.guide.addEventListener('click', () =>
+            closePanel(panels.guide)
+          );
+
+        // ESC로 닫기
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') closeAllPanels();
+        });
+      })();
+    </script>
+
     <div id="sidebar" class="sidebar hidden">
-        <div class="sidebar-header">
-            <span id="sidebar-name"></span>
-            <button id="sidebar-close">X</button>
-        </div>
+      <div class="sidebar-header">
+        <span id="sidebar-name"></span>
+        <button id="sidebar-close">X</button>
+      </div>
 
-        <div class="sidebar-body">
-            <p><strong>주소:</strong> <span id="sidebar-addr"></span></p>
-            <p><strong>상태:</strong> <span id="sidebar-status"></span></p>
+      <div class="sidebar-body">
+        <p><strong>주소:</strong> <span id="sidebar-addr"></span></p>
+        <p><strong>상태:</strong> <span id="sidebar-status"></span></p>
 
-            <div id="roadview" class="roadview-box"></div>
-        </div>
+        <div id="roadview" class="roadview-box"></div>
+      </div>
     </div>
-
-</body>
-
+  </body>
 </html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>Data Source</title>
+    <link rel="stylesheet" href="/public/main.css" />
+    <style>
+      body {
+        font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+        color: #111;
+      }
+
+      /* 상단 영역: 제목 + 네비 */
+      .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between; /* ✅ 한 줄 정렬 (좌: 제목 / 우: 메뉴) */
+      }
+
+      /* nav 메뉴 오른쪽 정렬 */
+      .nav-menu {
+        list-style: none;
+        margin: 100px 180px 0 0;
+        padding: 0;
+        display: flex;
+        gap: 30px;
+      }
+
+      .nav-menu li a {
+        text-decoration: none;
+        color: #bbb;
+        font-weight: 600;
+      }
+
+      .nav-menu li a:hover {
+        color: #000;
+      }
+
+      .faq-title {
+        font-size: 2.7em;
+        font-weight: 700;
+        margin: 125px 0 60px 150px;
+      }
+
+      .faq-list {
+        max-width: 1200px;
+        margin: 0 auto;
+        border-top: 1px solid #eee;
+      }
+
+      .faq-list h2 {
+        margin-top: 80px;
+        margin-bottom: 30px;
+        font-size: 26px;
+      }
+      .faq-list li {
+        font-size: 17px;
+        margin-bottom: 40px;
+      }
+
+      .faq-list p {
+        font-size: 17px;
+        margin-bottom: 40px;
+      }
+
+      details {
+        border-bottom: 1px solid #eee;
+        padding: 33px 0;
+        overflow: hidden; /* 내용이 부드럽게 잘리도록 */
+        transition: all 0.4s ease; /* 전체 전환 부드럽게 */
+      }
+
+      details[open] summary::before {
+        transform: rotate(90deg);
+      }
+
+      details[open] {
+        padding-bottom: 40px; /* 열릴 때 아래 여백 */
+      }
+
+      /* 부드러운 펼침 효과 */
+      details > *:not(summary) {
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.5s ease;
+      }
+
+      details[open] > *:not(summary) {
+        opacity: 1;
+        max-height: 500px; /* 내용 높이에 맞게 조정 */
+      }
+
+      summary {
+        font-size: 1.4em;
+        font-weight: 600;
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        align-items: center; /* ← 왼쪽에 아이콘 + 텍스트 한 줄 */
+        gap: 20px;
+      }
+
+      /* 크롬/사파리 기본 마커 숨김 */
+      summary::-webkit-details-marker {
+        display: none;
+      }
+
+      /* 커스텀 삼각형 아이콘 */
+      summary::before {
+        content: '▶';
+        font-size: 0.9em;
+        transition: transform 0.2s ease;
+      }
+      details[open] summary::before {
+        transform: rotate(90deg); /* 펼치면 ▼처럼 보이게 */
+      }
+
+      details p {
+        margin-top: 15px;
+        color: #555;
+        line-height: 1.6;
+        font-size: 1.1em;
+      }
+
+      .faq-list {
+        margin-bottom: 120px; /* FAQ와 footer 간격 띄우기 */
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="main-header">
+      <div class="logo-container">
+        <a href="main.html" id="app-logo"
+          ><img src="/public/logo.jpg" alt="로고" class="logo-image"
+        /></a>
+      </div>
+      <nav class="info-nav">
+        <ul>
+          <li>
+            <a href="background.html" data-info="background">구현 배경</a>
+          </li>
+          <li><a href="casestudy.html" data-info="cases">실제 사례</a></li>
+          <li><a href="faq1.html" data-info="faq">FAQ</a></li>
+          <li><a href="datasource.html" data-info="data">데이터 출처</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="top-bar">
+      <h1 class="faq-title">데이터 출처</h1>
+    </div>
+
+    <main>
+      <section class="faq-list">
+        <details>
+          <summary>폐주유소 현황 데이터</summary>
+          <p>ㄱㄴㄷ</p>
+        </details>
+
+        <details>
+          <summary>교통량, 관광지수, 상권, 인구</summary>
+          <ul>
+            <li>교통량 -</li>
+            <li>관광지수 -</li>
+            <li>상권 -</li>
+            <li>인구 -</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>참고 논문</summary>
+          <p>ㄱㄴㄷ</p>
+        </details>
+      </section>
+    </main>
+  </body>
+  <footer class="site-footer">
+    <div class="footer-content">
+      <span>Copyright by ABSOLUTE</span>
+    </div>
+  </footer>
+</html>

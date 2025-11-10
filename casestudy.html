@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>Case Study</title>
+    <link rel="stylesheet" href="/public/main.css" />
+    <style>
+      /* 카드 그리드 컨테이너: 가운데 정렬 + 반응형 칼럼 */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 48px;
+        max-width: 1200px;
+        margin: 0 auto 100px; /* 가운데 정렬 + 하단 여백 */
+        padding: 0 20px; /* 좌우 여백 */
+      }
+
+      /* 카드 */
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      /* 상단 카테고리 배지 */
+      .card .badge {
+        font-size: 14px;
+        font-weight: 700;
+        color: #6b7280;
+        margin-top: 15px;
+      }
+
+      /* 썸네일 링크(이미지) */
+      .card .thumb {
+        position: relative;
+        display: block;
+        border-radius: 8px;
+        overflow: hidden;
+        outline: 1px solid #e5e7eb;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .card .thumb img {
+        width: 100%;
+        height: 320px; /* 동일한 카드 높이 */
+        object-fit: cover; /* 비율 유지하며 채우기 */
+        display: block;
+      }
+
+      /* 제목/메타 (헤더 a 스타일과 충돌 방지 위해 .card 범위로 한정) */
+      .card .title {
+        margin: 2px 0 4px;
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1.25;
+        letter-spacing: -0.2px;
+      }
+      .card .title a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .card .title a:hover {
+        color: #0f766e;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .card .meta {
+        font-size: 14px;
+        color: #6b7280;
+      }
+      body {
+        font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+        color: #111;
+      }
+
+      /* 상단 영역: 제목 + 네비 */
+      .top-bar {
+        display: flex;
+        align-items: center;
+      }
+
+      /* nav 메뉴 오른쪽 정렬 */
+      .nav-menu {
+        list-style: none;
+        margin: 100px 180px 0 0;
+        padding: 0;
+        display: flex;
+        gap: 30px;
+      }
+
+      .nav-menu li a {
+        text-decoration: none;
+        color: #bbb;
+        font-weight: 600;
+      }
+
+      .nav-menu li a:hover {
+        color: #000;
+      }
+
+      .faq-title {
+        font-size: 2.7em;
+        font-weight: 700;
+        margin: 125px 0 60px 150px;
+      }
+
+      .grid {
+        margin-bottom: 120px; /* FAQ와 footer 간격 띄우기 */
+        border-top: 1px solid #eee;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="main-header">
+      <div class="logo-container">
+        <a href="main.html" id="app-logo"
+          ><img src="/public/logo.jpg" alt="로고" class="logo-image"
+        /></a>
+      </div>
+      <nav class="info-nav">
+        <ul>
+          <li>
+            <a href="background.html" data-info="background">구현 배경</a>
+          </li>
+          <li><a href="casestudy.html" data-info="cases">실제 사례</a></li>
+          <li><a href="faq1.html" data-info="faq">FAQ</a></li>
+          <li><a href="datasource.html" data-info="data">데이터 출처</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="top-bar">
+      <h1 class="faq-title">실제 사례 목록</h1>
+    </div>
+    <main>
+      <section class="grid" aria-label="실제 사례 목록">
+        <!-- 카드 1 -->
+        <article class="card">
+          <div class="badge">택배 거점</div>
+          <div class="thumb" href="case-haenam.html" aria-label="택배거점">
+            <img src="/public/hompick.jpg" alt="홈픽" loading="lazy" />
+          </div>
+          <h2 class="title">주유소를 이용한 택배서비스 '홈픽'</h2>
+          <div class="meta">
+            홈픽은 SK에너지와 GS칼텍스가 공유인프라로 제공한 주유소를 스타트업
+            ‘줌마(ZOOMMA) ’가 택배 거점으로 활용해 탄생시킨 택배서비스다.
+          </div>
+        </article>
+
+        <!-- 카드 2 -->
+        <article class="card">
+          <div class="badge">카페</div>
+          <div class="thumb" href="case-daejeon.html" aria-label="카페">
+            <img src="/public/cafe.jpg" alt="분더퓨얼" loading="lazy" />
+          </div>
+          <h2 class="title">정읍 감성 카페 '분더퓨얼'</h2>
+          <div class="meta">
+            전북 정읍시의 폐주유소를 감각적으로 개조해 주유소 감성 가득한
+            인테리어와 포토존이 매력인 감성 카페다.
+          </div>
+        </article>
+
+        <!-- 카드 3 -->
+        <article class="card">
+          <div class="badge">식당</div>
+          <div class="thumb" href="case-sk.html" aria-label="식당">
+            <img src="/public/pizza.jpg" alt="피자가게" loading="lazy" />
+          </div>
+          <h2 class="title">경주 주유소 피자 맛집 '기버스테이션'</h2>
+          <div class="meta">
+            폐주유소를 통째로 리모델링해 ‘주유 대신 피자’라는 콘셉트로 운영되는
+            경주 시내의 힙한 피자 맛집이다.
+          </div>
+        </article>
+
+        <!-- 카드4 -->
+        <article class="card">
+          <div class="badge">식당</div>
+          <div class="thumb" href="case-convenience.html" aria-label="식당">
+            <img src="/public/hamburger.jpg" alt="햄버거" loading="lazy" />
+          </div>
+          <h2 class="title">폐주유소의 감성변신 '하만스빅버거'</h2>
+          <div class="meta">
+            폐주유소 부지를 개조한 함안의 수제버거 맛집 '하만스빅버거'.
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="badge">전시장</div>
+          <div class="thumb" href="case-workshop.html" aria-label="전시">
+            <img src="/public/art.jpg" alt="미술관" loading="lazy" />
+          </div>
+          <h2 class="title">주유소, 이제는 미술관이 되다</h2>
+          <div class="meta">
+            서울 사당셀프주유소 외벽에는 대형 LED 디지털 아트 월이 설치되어,
+            국내외 아티스트들의 작품이 전시됩니다. 기름 대신 예술로 채우는
+            주유소, 새로운 도시문화 플랫폼으로 주목받고 있다.
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="badge">발전소</div>
+          <div class="thumb" href="case-gallery.html" aria-label="발전소">
+            <img src="/public/energy.png" alt="발전소" loading="lazy" />
+          </div>
+          <h2 class="title">
+            도심 속 친환경 미니 발전소로 변신! 에너지 슈퍼 스테이션
+          </h2>
+          <div class="meta">
+            SK에코플랜트 분산에너지팀에서 폐주유소를 친환경 에너지를 생산하는
+            일명 ‘에너지 슈퍼 스테이션’으로 바꾸고있다.
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+
+  <footer class="site-footer">
+    <div class="footer-content">
+      <span>Copyright by ABSOLUTE</span>
+    </div>
+  </footer>
+</html>
