@@ -1,381 +1,547 @@
 body {
-    margin: 0;
-    padding-top: 60px;
-    font-family: "Noto Sans KR", sans-serif;
+  margin: 0;
+  padding-top: 60px;
+  font-family: 'Noto Sans KR', sans-serif;
 }
 
 #map {
-    width: 100%;
-    height: 100vh;
+  width: 100%;
+  height: 100vh;
 }
 
 /* 🔹 상단 네비게이션 바 */
 .main-header {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background-color: #ffffff;
-    padding: 10px 20px;
-    border-bottom: 1px solid #ddd;
-    z-index: 9999;
-    display: flex-end;
-    line-height: 1.5;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: #ffffff;
+  padding: 10px 20px;
+  border-bottom: 1px solid #ddd;
+  z-index: 9999;
+  display: flex-end;
+  line-height: 1.5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 50px;
+  font-size: 16px;
 }
 
 .info-nav {
-    display: flex;
-    margin: 0 auto;
+  display: flex;
+  margin: 0 auto;
+}
 
+.logo-image {
+  width: 140px; /* 이미지 크기 조절 */
+  height: auto;
+  display: block; /* 여백 제거 */
 }
 
 .logo-container {
-    margin-left: 80px;
+  margin-left: 20px;
 }
 
 /* 1. 기본 스타일 재설정 */
 .info-nav ul {
-    list-style: none;
-    margin: 8px;
-    display: flex;
-    gap: 100px;
-
+  list-style: none;
+  margin: 8px;
+  display: flex;
+  gap: 100px;
 }
 
 /* 2. 각 항목(li) 스타일 조정 */
 .info-nav li {
-    /* li 요소에 추가적인 공간 조정이 필요하면 여기에 추가합니다. */
-    /* display: inline-block; 대신 display: flex를 사용했기 때문에 이 설정은 선택 사항입니다. */
+  /* li 요소에 추가적인 공간 조정이 필요하면 여기에 추가합니다. */
+  /* display: inline-block; 대신 display: flex를 사용했기 때문에 이 설정은 선택 사항입니다. */
+}
+
+.info-nav li a {
+  font-size: 17px;
+}
+
+.info-nav li a:hover {
+  font-weight: bold; /* hover 시 글씨를 진하게 */
 }
 
 /* 3. 링크(a) 스타일 조정 (옵션) */
 .info-nav a {
-    text-decoration: none;
-    color: black;
-    font-size: 18px;
-    padding: 5px 0;
-
+  text-decoration: none;
+  color: black;
+  font-size: 18px;
+  padding: 5px 0;
 }
 
 .main-vertical-nav {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 80px;
-    /* 고정된 너비 (아이콘과 텍스트가 들어갈 만큼) */
-    height: 100vh;
-    /* 화면 전체 높이 */
-    background-color: #ffffff;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    z-index: 1100;
-    /* 헤더보다 높게 설정 */
-    padding-top: 10px;
+  position: fixed;
+  top: 14px;
+  left: 0;
+  width: 80px;
+  /* 고정된 너비 (아이콘과 텍스트가 들어갈 만큼) */
+  height: 100vh;
+  /* 화면 전체 높이 */
+  background-color: #ffffff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  z-index: 1100;
+  /* 헤더보다 높게 설정 */
+  padding-top: 10px;
 }
 
 .main-vertical-nav .nav-logo {
-    text-align: center;
-    padding: 15px 0;
-    font-weight: bold;
-    font-size: 12px;
+  text-align: center;
+  padding: 15px 0;
+  font-weight: bold;
+  font-size: 12px;
 }
 
 #nav-menu-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    /* Flexbox를 사용하여 세로 정렬 */
-    flex-direction: column;
-    /* ⭐ 핵심: 항목을 수직(세로)으로 쌓습니다. */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  /* Flexbox를 사용하여 세로 정렬 */
+  flex-direction: column;
+  /* ⭐ 핵심: 항목을 수직(세로)으로 쌓습니다. */
+}
+
+#nav-menu-list li a,
+#nav-menu-list li a:visited,
+#nav-menu-list li a:hover,
+#nav-menu-list li a:active {
+  text-decoration: none; /* 밑줄 제거 */
+  color: inherit; /* 원래 글자색 유지 */
 }
 
 .main-vertical-nav li {
-    /* 각 메뉴 항목의 크기 및 정렬 */
-    width: 100%;
-    padding: 18px 0;
-    text-align: center;
-    /* ⭐ 텍스트와 아이콘을 가운데 정렬 */
-    cursor: pointer;
-    transition: background-color 0.2s;
-    border-bottom: 0.5px solid #f0efef;
+  /* 각 메뉴 항목의 크기 및 정렬 */
+  width: 100%;
+  padding: 18px 0;
+  text-align: center;
+  /* ⭐ 텍스트와 아이콘을 가운데 정렬 */
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 0.5px solid #f0efef;
 
-    /* 텍스트와 아이콘을 세로로 정렬하기 위한 Flexbox 설정 */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 12px;
-    color: #333;
+  /* 텍스트와 아이콘을 세로로 정렬하기 위한 Flexbox 설정 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 12px;
+  color: #333;
 }
 
 .main-vertical-nav li .icon {
-    /* 아이콘 크기 조정 */
-    font-size: 24px;
-    margin-bottom: 7px;
+  /* 아이콘 크기 조정 */
+  font-size: 24px;
+  margin-bottom: 7px;
 }
 
 .main-vertical-nav li:hover {
-    background-color: #f0f0f0;
+  background-color: #f0f0f0;
 }
 
 /* ⭐ 활성화된 항목 스타일 (예시: 기업 항목처럼 파란색으로) */
 .main-vertical-nav li.active {
-    color: #1a73e8;
-    /* 파란색 텍스트 */
-    /* background-color: #e6f7ff; (선택 사항) */
+  color: #1a73e8;
+  /* 파란색 텍스트 */
+  /* background-color: #e6f7ff; (선택 사항) */
 }
 
+/* Footer 스타일 */
+.site-footer {
+  background-color: #111;
+  color: #fff;
+  padding: 40px 0;
+  text-align: center;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: flex-start; /* 왼쪽 정렬 */
+  align-items: center;
+  padding-left: 60px; /* 왼쪽 여백 (공간 띄우기) */
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.footer-content span {
+  color: #ffffff;
+}
 
 /* ===== 검색 전체 박스 ===== */
 .search-container {
-    position: absolute;
-    top: 80px;
-    left: 100px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
-    padding: 12px 16px;
-    width: 320px;
-    font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
-    z-index: 1000;
-    transition: all 0.3s ease;
+  position: absolute;
+  top: 80px;
+  left: 100px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  padding: 12px 16px;
+  width: 320px;
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  z-index: 1000;
+  transition: all 0.3s ease;
 }
 
 /* ===== 상단 탭 ===== */
 .search-tabs {
-    display: flex;
-    justify-content: space-between;
-    background: #f3f4f6;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  background: #f3f4f6;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
 }
 
 .search-tabs button {
-    flex: 1;
-    padding: 8px 0;
-    border: none;
-    background: transparent;
-    color: #666;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .search-tabs button.active {
-    background: #00796b;
-    color: #fff;
+  background: #00796b;
+  color: #fff;
 }
 
 /* ===== 주유소 검색 ===== */
 #station-search-module {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 #search-input {
-    flex: 1;
-    padding: 8px 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: 0.2s;
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: 0.2s;
 }
 
 #search-input:focus {
-    outline: none;
-    border-color: #00796b;
-    box-shadow: 0 0 0 2px rgba(0, 121, 107, 0.2);
+  outline: none;
+  border-color: #00796b;
+  box-shadow: 0 0 0 2px rgba(0, 121, 107, 0.2);
 }
 
 #search-button {
-    background: #00796b;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 13px 14px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: 0.2s;
+  background: #00796b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 13px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s;
 }
 
 #search-button:hover {
-    background: #005f56;
+  background: #005f56;
 }
 
 /* ===== 지역 검색 ===== */
 #region-dropdowns {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .region-select {
-    padding: 8px 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-    transition: 0.2s;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  transition: 0.2s;
 }
 
 .region-select:focus {
-    border-color: #00796b;
-    box-shadow: 0 0 0 2px rgba(0, 121, 107, 0.2);
+  border-color: #00796b;
+  box-shadow: 0 0 0 2px rgba(0, 121, 107, 0.2);
 }
 
 /* ===== 검색 제안 목록 ===== */
 #suggestions {
-    position: absolute;
-    top: 110%;
-    /* input 아래로 약간 띄우기 */
-    left: 0;
-    right: 0;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 2000;
-    max-height: 200px;
-    overflow-y: auto;
+  position: absolute;
+  top: 110%;
+  /* input 아래로 약간 띄우기 */
+  left: 0;
+  right: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 2000;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 /* 리스트 항목 */
 .suggestion-item {
-    padding: 8px 10px;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-    transition: background 0.2s ease;
+  padding: 8px 10px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .suggestion-item:hover {
-    background: #e0f2f1;
+  background: #e0f2f1;
 }
 
 /* 정보 창 */
 .info-window {
-    width: 234px;
-    background: #fff;
-    border-radius: 10px;
-    overflow: visible;
-    border: 1.5px solid #e0e0e0;
-    font-family: "Pretendard", sans-serif;
-    cursor: pointer;
+  width: 234px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: visible;
+  border: 1.5px solid #e0e0e0;
+  font-family: 'Pretendard', sans-serif;
+  cursor: pointer;
 }
 
 /* 상단 이미지 영역 */
 .info-img {
-    background: #f4f4f4;
-    height: 110px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    font-size: 12px;
-    font-style: italic;
+  background: #f4f4f4;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 12px;
+  font-style: italic;
 }
 
 /*  내용 영역 */
 .info-body {
-    padding: 10px 12px;
-    font-size: 13px;
-    color: #333;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #333;
 }
 
 /*  주유소 이름 */
 .info-name {
-    font-weight: 600;
-    font-size: 14px;
-    margin-bottom: 6px;
-    color: #2c3e50;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #2c3e50;
 }
 
 /*  주소 */
 .info-addr {
-    word-break: break-all;
-    margin-bottom: 4px;
-    line-height: 1.3;
+  word-break: break-all;
+  margin-bottom: 4px;
+  line-height: 1.3;
 }
 
 /*  상태 */
 .info-status {
-    margin-bottom: 4px;
+  margin-bottom: 4px;
 }
 
 /*  상태 뱃지 색상 */
 .status-badge {
-    color: #fff;
-    padding: 2px 6px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .status-badge.closed {
-    background: #e74c3c;
-    /* 폐업 */
+  background: #e74c3c;
+  /* 폐업 */
 }
 
 .status-badge.paused {
-    background: #f39c12;
-    /* 휴업 */
+  background: #f39c12;
+  /* 휴업 */
 }
 
 /*  특징 */
 .info-desc {
-    margin-top: 4px;
+  margin-top: 4px;
 }
 
 .sidebar {
-    position: fixed;
-    left: 0;
-    top: 70px;
-    width: 300px;
-    height: calc(100% - 70px);
-    background: white;
-    border-left: 2px solid #ddd;
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.15);
-    padding: 15px;
-    overflow-y: auto;
-    transition: transform .25s;
-    z-index: 1000;
+  position: fixed;
+  left: 0;
+  top: 70px;
+  width: 300px;
+  height: calc(100% - 70px);
+  background: white;
+  border-left: 2px solid #ddd;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.15);
+  padding: 15px;
+  overflow-y: auto;
+  transition: transform 0.25s;
+  z-index: 1000;
 }
 
 .sidebar.hidden {
-    transform: translateX(-100%);
+  transform: translateX(-100%);
 }
 
 .sidebar-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
 #sidebar-close {
-    border: none;
-    background: #eee;
-    padding: 5px 12px;
-    cursor: pointer;
+  border: none;
+  background: #eee;
+  padding: 5px 12px;
+  cursor: pointer;
 }
 
 .roadview-box {
-    width: 100%;
-    height: 200px;
-    margin-top: 12px;
-    background: #f1f1f1;
+  width: 100%;
+  height: 200px;
+  margin-top: 12px;
+  background: #f1f1f1;
 }
 
-
-
 .hidden {
-    display: none;
+  display: none;
+}
+
+/* ---- 목록 패널 ---- */
+.side-panel {
+  position: fixed;
+  top: 72px; /* 헤더 높이에 맞게 살짝 조정 */
+  left: 88px; /* 왼쪽 vertical nav(아이콘 칼럼) 다음 위치 */
+  width: 400px;
+  height: calc(100vh - 96px);
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  overflow: auto;
+  z-index: 1000;
+
+  /* 초기 상태: 숨김(투명/클릭안됨/옆에서 살짝 들어옴) */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-16px);
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.side-panel.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.side-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e9e9e9;
+  background: #fff;
+  position: sticky;
+  top: 0;
+}
+#list-panel-close {
+  font-size: 22px;
+  line-height: 1;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+#guide-panel-close {
+  font-size: 22px;
+  line-height: 1;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.side-panel__body {
+  padding: 14px;
+}
+
+/* ---- 검색창을 오른쪽으로 "밀기" ---- */
+.search-container {
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+.search-container.pushed-by-list {
+  /* 패널(420px) + 여백(20px) 만큼 우측으로 이동 */
+  transform: translateX(410px);
+}
+
+/* 좁은 화면에서는 살짝 더 작게 */
+@media (max-width: 1280px) {
+  .side-panel {
+    width: 360px;
+  }
+  .search-container.pushed-by-list {
+    transform: translateX(380px);
+  }
+}
+
+/* ===== Guide panel cards ===== */
+.guide-body {
+  display: grid;
+  gap: 16px;
+  padding: 12px 12px 18px;
+}
+
+.guide-card {
+  background: #fff;
+  border: 1px solid #e7e7e7;
+  border-radius: 14px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.guide-card__thumb {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.guide-card__thumb svg {
+  width: 60px;
+  height: 60px;
+  color: #2b2b2b;
+}
+
+/* 색 테마 */
+.guide-card.is-blue .guide-card__thumb {
+  background: #e6f1fb;
+}
+.guide-card.is-pink .guide-card__thumb {
+  background: #f6e3f1;
+}
+.guide-card.is-green .guide-card__thumb {
+  background: #e5f5e9;
+}
+
+.guide-card__content {
+  padding: 16px 18px 18px;
+}
+.guide-card__content h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: #111;
+}
+.guide-card__content p {
+  margin: 0;
+  color: #444;
+  line-height: 1.6;
+  font-size: 15px;
 }
