@@ -1,0 +1,53 @@
+// public/js/api.js
+export const API_BASE = "http://localhost:8000"; // 배포 시 변경
+
+// 지도 범위 내 주유소 목록
+export async function fetchStationsInMap(map, limit = 1000) {
+  const bounds = map.getBounds();
+  const sw = bounds.getSouthWest(); // 남서쪽 좌표
+  const ne = bounds.getNorthEast(); // 북동쪽 좌표
+
+  // 좌표 숫자값 추출
+  const lat1 = Math.min(sw.getLat(), ne.getLat());
+  const lat2 = Math.max(sw.getLat(), ne.getLat());
+  const lng1 = Math.min(sw.getLng(), ne.getLng());
+  const lng2 = Math.max(sw.getLng(), ne.getLng());
+
+  // FastAPI 요구 파라미터명에 맞춰 URL 구성
+  const url = `${API_BASE}/api/stations/map?lat1=${lat1}&lng1=${lng1}&lat2=${lat2}&lng2=${lng2}&limit=${limit}`;
+  console.log("📡 Fetching stations:", url);
+
+  const res = await fetch(url);
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(`❌ GET /api/stations/map failed (${res.status}): ${msg}`);
+  }
+
+  const data = await res.json();
+    console.log("✅ API 응답:", data);
+    return data;
+}
+
+// 지역별 주유소 목록
+export async function fetchStationsByRegion(code) {
+  const res = await fetch(`${API_BASE}/api/stations/region/${code}`);
+  return res.ok ? res.json() : [];
+}
+
+// 키워드 검색
+export async function searchStations(keyword) {
+  const res = await fetch(`${API_BASE}/api/stations/search?keyword=${encodeURIComponent(keyword)}`);
+  return res.ok ? res.json() : [];
+}
+
+// 추천 결과
+export async function fetchRecommendation(stationId) {
+  const res = await fetch(`${API_BASE}/api/recommend?station_id=${stationId}`);
+  return res.ok ? res.json() : {};
+}
+
+// ML 추천
+export async function fetchMLRecommendation(stationId) {
+  const res = await fetch(`${API_BASE}/api/ml-recommend?station_id=${stationId}`);
+  return res.ok ? res.json() : {};
+}
