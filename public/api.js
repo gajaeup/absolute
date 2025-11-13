@@ -2,12 +2,11 @@
 export const API_BASE = "http://localhost:8000"; // 배포 시 변경
 
 // 지도 범위 내 주유소 목록
-export async function fetchStationsInMap(map, limit = 1000) {
+export async function fetchStationsInMap(map, limit = 10000) {
   const bounds = map.getBounds();
   const sw = bounds.getSouthWest(); // 남서쪽 좌표
   const ne = bounds.getNorthEast(); // 북동쪽 좌표
 
-  // 좌표 숫자값 추출
   const lat1 = Math.min(sw.getLat(), ne.getLat());
   const lat2 = Math.max(sw.getLat(), ne.getLat());
   const lng1 = Math.min(sw.getLng(), ne.getLng());
@@ -36,8 +35,12 @@ export async function fetchStationsByRegion(code) {
 
 // 키워드 검색
 export async function searchStations(keyword) {
-  const res = await fetch(`${API_BASE}/api/stations/search?keyword=${encodeURIComponent(keyword)}`);
-  return res.ok ? res.json() : [];
+  const url = `${API_BASE}/api/stations/search?query=${encodeURIComponent(keyword)}`;
+  console.log("🔍 검색 요청:", url);
+  const res = await fetch(url);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.items || data;
 }
 
 // 추천 결과
