@@ -2,3 +2,5 @@ apikey.js
 nouse
 __pycache__/
 transfer.py
+public/emd_wgs84.json
+public/sig_wgs84.json
