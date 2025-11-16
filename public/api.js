@@ -1,5 +1,5 @@
 // public/js/api.js
-export const API_BASE = "https://api.restation.site"; // 배포 주소
+export const API_BASE = "https://api.restation.site";// 배포 시 변경
 
 // 지도 범위 내 주유소 목록
 export async function fetchStationsInMap(map, limit = 10000) {
@@ -29,8 +29,15 @@ export async function fetchStationsInMap(map, limit = 10000) {
 
 // 지역별 주유소 목록
 export async function fetchStationsByRegion(code) {
-  const res = await fetch(`${API_BASE}/api/stations/region/${code}`);
-  return res.ok ? res.json() : [];
+  const url = `${API_BASE}/api/stations/region/${encodeURIComponent(code)}?limit=5000`;
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    console.error(`❌ region API error: ${res.status}`);
+    return { features: [] };
+  }
+
+  return await res.json();
 }
 
 // 키워드 검색
