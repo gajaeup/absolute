@@ -1,7 +1,7 @@
 // public/js/main.js
 import { initMap, drawMarkers, highlightMarkers } from "./map.js";
 import { fetchStationsInMap, searchStations } from "./api.js";
-import { switchSearchMode, initSearchTabs, loadSidoData } from "./search.js";
+import { switchSearchMode, initSearchTabs, loadSidoData, initRegionSearch } from "./search.js";
 
 
 async function loadKakaoSDK() {
@@ -50,6 +50,26 @@ window.addEventListener("DOMContentLoaded", async () => {
         minClusterSize: 10,
         disableClickZoom: false,
     });
+    const geoSources = {
+    sido: '/public/ctprvn_wgs84.json',
+    sig: '/public/sig_wgs84_simplified.json',
+    emd: '/public/HangJeongDong_ver20250401_simplified.json',
+  };
+   const geoData = {};
+  
+ 
+  for (const [key, path] of Object.entries(geoSources)) {
+    try {
+      const res = await fetch(path);
+      geoData[key] = await res.json();
+      console.log(`✅ ${key} 레이어 로드 완료:`, geoData[key].features.length);
+    } catch (err) {
+      console.error(`❌ ${key} GeoJSON 로드 실패`, err);
+    }
+  }
+  window.geoData = geoData;
+  initRegionSearch(geoData, map)
+  initSearchTabs();
 
     // 2️⃣ 지도 기본 표시 (현재 영역 내 주유소)
     try {
