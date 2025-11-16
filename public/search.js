@@ -1,3 +1,8 @@
+import { fetchStationsByRegion } from "./api.js";
+
+/* =========================
+   🔹 탭 전환
+   ========================= */
 export function switchSearchMode(mode) {
   const tabStation = document.getElementById("tab-station");
   const tabRegion = document.getElementById("tab-region");
@@ -5,66 +10,262 @@ export function switchSearchMode(mode) {
   const regionModule = document.getElementById("region-search-module");
 
   if (mode === "station") {
-    tabStation.classList.add("active");
-    tabRegion.classList.remove("active");
-    stationModule.classList.add("active");
-    stationModule.classList.remove("hidden");
-    regionModule.classList.remove("active");
-    regionModule.classList.add("hidden");
-  } else if (mode === "region") {
-    tabRegion.classList.add("active");
-    tabStation.classList.remove("active");
-    regionModule.classList.add("active");
-    regionModule.classList.remove("hidden");
-    stationModule.classList.remove("active");
-    stationModule.classList.add("hidden");
+     tabStation.classList.add('active');
+     tabRegion.classList.remove('active');
+
+    // 검색 모듈 표시/숨김
+     stationModule.classList.add('active');
+     stationModule.classList.remove('hidden');
+
+    regionModule.classList.remove('active');
+    regionModule.classList.add('hidden');
+
+  } else {
+    tabRegion.classList.add('active');
+    tabStation.classList.remove('active');
+
+    regionModule.classList.add('active');
+    regionModule.classList.remove('hidden');
+
+    stationModule.classList.remove('active');
+    stationModule.classList.add('hidden');
     loadSidoData();
+
   }
 }
 
-// 🔹 시도 데이터 로드
+export function initSearchTabs() {
+  document.getElementById("tab-station").addEventListener("click", () => switchSearchMode("station"));
+  document.getElementById("tab-region").addEventListener("click", () => switchSearchMode("region"));
+}
+
+/* =========================
+   🔹 시도 드롭다운 로드
+   ========================= */
 export function loadSidoData() {
   const selectSido = document.getElementById("select-sido");
-  const selectSigungu = document.getElementById("select-sigungu");
-  const selectEupmyeondong = document.getElementById("select-eupmyeondong");
+  if (!window.geoData || !window.geoData.sido) return;
 
-  const sidoList = [
-    "서울특별시", "부산광역시", "대구광역시", "인천광역시",
-    "광주광역시", "대전광역시", "울산광역시", "세종특별자치시",
-    "경기도", "강원특별자치도", "충청북도", "충청남도",
-    "전북특별자치도", "전라남도", "경상북도", "경상남도", "제주특별자치도"
-  ];
+  selectSido.innerHTML = `<option value="">-- 시/도 선택 --</option>`;
 
-  selectSido.innerHTML = "<option value=''>-- 시/도 선택 --</option>";
-  selectSigungu.innerHTML = "<option value=''>-- 시/군/구 선택 --</option>";
-  selectEupmyeondong.innerHTML = "<option value=''>-- 읍/면/동 선택 --</option>";
-
-  sidoList.forEach((sido) => {
-    const option = new Option(sido, sido);
-    selectSido.add(option);
-  });
-
-  selectSido.addEventListener("change", (e) => {
-    const selected = e.target.value;
-    if (selected) {
-      loadSigunguData(selected);
-    }
+  window.geoData.sido.features.forEach(f => {
+    selectSido.add(new Option(f.properties.CTP_KOR_NM, f.properties.CTP_KOR_NM));
   });
 }
 
-// 🔹 시군구 더미 로드 (백엔드 연동 가능)
-function loadSigunguData(sido) {
-  const selectSigungu = document.getElementById("select-sigungu");
-  selectSigungu.disabled = false;
-  selectSigungu.innerHTML = `<option value="">${sido}의 시군구 선택</option>`;
-  // 실제로는 서버 API(`/api/regions?sido=${sido}`) 등에서 불러오면 됩니다.
+/* =========================
+   🔹 지역 검색 초기화
+   ========================= */
+export function initRegionSearch(geoData, map) {
+  const sidoSel = document.getElementById("select-sido");
+  const sigSel = document.getElementById("select-sigungu");
+  const emdSel = document.getElementById("select-eupmyeondong");
+
+  sigSel.innerHTML = `<option>-- 시/군/구 선택 --</option>`;
+  emdSel.innerHTML = `<option>-- 읍/면/동 선택 --</option>`;
+
+  loadSido(sidoSel, geoData);
+
+  // 시도 선택
+  sidoSel.addEventListener("change", async () => {
+    sigSel.disabled = false;
+    emdSel.disabled = true;
+
+    loadSigungu(sidoSel.value, sigSel, geoData);
+    drawSidoPolygon(sidoSel.value, geoData, map);
+
+    await updateStationList();
+  });
+
+  // 시군구 선택
+  sigSel.addEventListener("change", async () => {
+    emdSel.disabled = false;
+
+    loadEmd(sidoSel.value, sigSel.value, emdSel, geoData);
+    drawSigunguPolygon(sidoSel.value, sigSel.value, geoData, map);
+
+    await updateStationList();
+  });
+
+  // 읍면동 선택
+  emdSel.addEventListener("change", async () => {
+    const fullName = emdSel.value;
+    drawEmdPolygon(fullName, geoData, map);
+    await updateStationList();
+  });
 }
 
-// 🔹 탭 클릭 이벤트 초기화
-export function initSearchTabs() {
-  const tabStation = document.getElementById("tab-station");
-  const tabRegion = document.getElementById("tab-region");
+/* =========================
+   🔹 드롭다운 로드 함수
+   ========================= */
 
-  tabStation.addEventListener("click", () => switchSearchMode("station"));
-  tabRegion.addEventListener("click", () => switchSearchMode("region"));
+function loadSido(select, geoData) {
+  select.innerHTML = `<option>-- 시/도 선택 --</option>`;
+  geoData.sido.features.forEach(f => {
+    select.add(new Option(f.properties.CTP_KOR_NM, f.properties.CTP_KOR_NM));
+  });
+}
+
+function loadSigungu(sido, select, geoData) {
+  select.innerHTML = `<option>-- 시/군/구 선택 --</option>`;
+
+  const codeMap = {
+    서울특별시:"11", 부산광역시:"26", 대구광역시:"27", 인천광역시:"28",
+    광주광역시:"29", 대전광역시:"30", 울산광역시:"31", 세종특별자치시:"36",
+    경기도:"41", 강원특별자치도:"51", 충청북도:"43", 충청남도:"44",
+    전북특별자치도:"52", 전라남도:"46", 경상북도:"47", 경상남도:"48",
+    제주특별자치도:"50"
+  };
+
+  const prefix = codeMap[sido];
+
+  geoData.sig.features
+    .filter(f => f.properties.SIG_CD.startsWith(prefix))
+    .forEach(f => {
+      select.add(new Option(f.properties.SIG_KOR_NM, f.properties.SIG_KOR_NM));
+    });
+}
+
+function loadEmd(sido, sig, select, geoData) {
+  select.innerHTML = `<option>-- 읍/면/동 선택 --</option>`;
+
+  const prefix = `${sido} ${sig}`;
+
+  geoData.emd.features
+    .filter(f => f.properties.adm_nm.startsWith(prefix))
+    .forEach(f => {
+      select.add(new Option(
+        f.properties.adm_nm.split(" ").pop(),
+        f.properties.adm_nm
+      ));
+    });
+}
+
+/* =========================
+   🔹 폴리곤 드로잉
+   ========================= */
+
+function clearPolygon() {
+  if (window.polygons) window.polygons.forEach(p => p.setMap(null));
+  window.polygons = [];
+}
+
+function drawSidoPolygon(name, geoData, map) {
+  const feature = geoData.sido.features.find(f => f.properties.CTP_KOR_NM === name);
+  drawPolygon(feature, map);
+}
+
+function drawSigunguPolygon(sidoName, sigName, geoData, map) {
+  const codeMap = {
+    서울특별시:"11", 부산광역시:"26", 대구광역시:"27", 인천광역시:"28",
+    광주광역시:"29", 대전광역시:"30", 울산광역시:"31", 세종특별자치시:"36",
+    경기도:"41", 강원특별자치도:"51", 충청북도:"43", 충청남도:"44",
+    전북특별자치도:"52", 전라남도:"46", 경상북도:"47", 경상남도:"48",
+    제주특별자치도:"50"
+  };
+
+  const prefix = codeMap[sidoName];
+
+  const feature = geoData.sig.features.find(
+    f =>
+      f.properties.SIG_KOR_NM === sigName &&
+      f.properties.SIG_CD.startsWith(prefix)
+  );
+
+  drawPolygon(feature, map);
+}
+
+function drawEmdPolygon(fullName, geoData, map) {
+  const feature = geoData.emd.features.find(f => f.properties.adm_nm === fullName);
+  drawPolygon(feature, map);
+}
+
+export function drawPolygon(feature, map) {
+  if (!feature) return;
+
+  clearPolygon();
+
+  const paths = [];
+
+  if (feature.geometry.type === "Polygon") {
+    paths.push(feature.geometry.coordinates[0].map(([x, y]) => new kakao.maps.LatLng(y, x)));
+  } else {
+    feature.geometry.coordinates.forEach(poly => {
+      paths.push(poly[0].map(([x, y]) => new kakao.maps.LatLng(y, x)));
+    });
+  }
+
+  const polygon = new kakao.maps.Polygon({
+    path: paths,
+    strokeWeight: 2,
+    strokeColor: "#00695c",
+    fillColor: "rgba(0,150,136,0.35)",
+    fillOpacity: 0.5,
+  });
+
+  polygon.setMap(map);
+  window.polygons.push(polygon);
+
+  const bounds = new kakao.maps.LatLngBounds();
+  paths.flat().forEach(p => bounds.extend(p));
+  map.setBounds(bounds);
+}
+
+/* =========================
+   🔹 지역명 → API → 왼쪽 리스트 업데이트
+   ========================= */
+
+function getSelectedRegionName() {
+  const sido = document.getElementById("select-sido").value;
+  const sig = document.getElementById("select-sigungu").value;
+  const emd = document.getElementById("select-eupmyeondong").value;
+
+  if (emd) return emd;
+
+  // 2) 시군구 선택한 경우 → "광주광역시 서구"
+  if (sig) return `${sido} ${sig}`;
+
+  // 3) 시도만 선택한 경우 → "광주광역시"
+  return sido;
+}
+
+async function updateStationList() {
+  const regionName = getSelectedRegionName();
+  const listEl = document.getElementById("region-station-list");
+
+  if (!regionName) {
+    listEl.innerHTML = `<div class="empty-msg">지역을 선택하세요</div>`;
+    return;
+  }
+
+  try {
+    const data = await fetchStationsByRegion(regionName);
+    const items = data.features || [];
+    renderStationList(items);
+  } catch (e) {
+    console.error("API 오류:", e);
+    renderStationList([]);
+  }
+}
+
+function renderStationList(items) {
+  const listEl = document.getElementById("region-station-list");
+  listEl.innerHTML = "";
+
+  if (!items || items.length === 0) {
+    listEl.innerHTML = `<div class="empty-msg">해당 지역에 주유소가 없습니다.</div>`;
+    return;
+  }
+
+  items.forEach(f => {
+  const props = f.properties;
+  const el = document.createElement("div");
+  el.className = "station-item";
+  el.innerHTML = `
+    <div class="station-name">${props["상호"] || "이름 없음"}</div>
+    <div class="station-addr">${props["정제주소"] || props["주소"] || "-"}</div>
+    <div class="station-status">${props["상태"] || "-"}</div>
+  `;
+    listEl.appendChild(el);
+  });
 }
