@@ -1,5 +1,5 @@
 // public/js/api.js
-export const API_BASE = "http://localhost:8000"; // 배포 시 변경
+export const API_BASE = "http://52.64.254.219:8000"; // 배포 시 변경
 
 // 지도 범위 내 주유소 목록
 export async function fetchStationsInMap(map, limit = 10000) {
