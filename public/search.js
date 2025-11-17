@@ -8,6 +8,7 @@ export function switchSearchMode(mode) {
   const tabRegion = document.getElementById("tab-region");
   const stationModule = document.getElementById("station-search-module");
   const regionModule = document.getElementById("region-search-module");
+   const regionList = document.getElementById("region-station-list");
 
   if (mode === "station") {
      tabStation.classList.add('active');
@@ -19,6 +20,7 @@ export function switchSearchMode(mode) {
 
     regionModule.classList.remove('active');
     regionModule.classList.add('hidden');
+     regionList.classList.add("hidden");
 
   } else {
     tabRegion.classList.add('active');
@@ -29,6 +31,8 @@ export function switchSearchMode(mode) {
 
     stationModule.classList.remove('active');
     stationModule.classList.add('hidden');
+     regionList.classList.remove("hidden");
+
     loadSidoData();
 
   }
