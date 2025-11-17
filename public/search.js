@@ -100,14 +100,14 @@ export function initRegionSearch(geoData, map) {
    ========================= */
 
 function loadSido(select, geoData) {
-  select.innerHTML = `<option>-- 시/도 선택 --</option>`;
+  select.innerHTML = `<option value="">-- 시/도 선택 --</option>`;
   geoData.sido.features.forEach(f => {
     select.add(new Option(f.properties.CTP_KOR_NM, f.properties.CTP_KOR_NM));
   });
 }
 
 function loadSigungu(sido, select, geoData) {
-  select.innerHTML = `<option>-- 시/군/구 선택 --</option>`;
+  select.innerHTML = `<option value="">-- 시/군/구 선택 --</option>`;
 
   const codeMap = {
     서울특별시:"11", 부산광역시:"26", 대구광역시:"27", 인천광역시:"28",
@@ -127,7 +127,7 @@ function loadSigungu(sido, select, geoData) {
 }
 
 function loadEmd(sido, sig, select, geoData) {
-  select.innerHTML = `<option>-- 읍/면/동 선택 --</option>`;
+  select.innerHTML = `<option value="">-- 읍/면/동 선택 --</option>`;
 
   const prefix = `${sido} ${sig}`;
 
@@ -231,6 +231,7 @@ function getSelectedRegionName() {
 
 async function updateStationList() {
   const regionName = getSelectedRegionName();
+  console.log("📤 보내는 지역명:", regionName);
   const listEl = document.getElementById("region-station-list");
    listEl.classList.remove("hidden");
 
