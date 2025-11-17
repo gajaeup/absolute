@@ -546,10 +546,8 @@ body {
 }
 .station-list {
   position: relative;
-  top: 260px;
-  left: 100px;
-  width: 350px;
-  max-height: 400px;
+  width: 95%;
+  max-height: 350px;
   overflow-y: auto;
   padding: 10px;
   background: #fafafa;
