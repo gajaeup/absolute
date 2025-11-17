@@ -34,10 +34,11 @@ export async function fetchStationsByRegion(code) {
 
   if (!res.ok) {
     console.error(`❌ region API error: ${res.status}`);
-    return { features: [] };
+    throw new Error(`region API error: ${res.status}`);
   }
 
-  return await res.json();
+  const data = await res.json();
+  return data; 
 }
 
 // 키워드 검색
@@ -61,3 +62,4 @@ export async function fetchMLRecommendation(stationId) {
   const res = await fetch(`${API_BASE}/api/ml-recommend?station_id=${stationId}`);
   return res.ok ? res.json() : {};
 }
+
