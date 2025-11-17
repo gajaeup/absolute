@@ -61,8 +61,8 @@ export function initRegionSearch(geoData, map) {
   const sigSel = document.getElementById("select-sigungu");
   const emdSel = document.getElementById("select-eupmyeondong");
 
-  sigSel.innerHTML = `<option>-- 시/군/구 선택 --</option>`;
-  emdSel.innerHTML = `<option>-- 읍/면/동 선택 --</option>`;
+  sigSel.innerHTML = `<option value="">-- 시/군/구 선택 --</option>`;
+  emdSel.innerHTML = `<option value="">-- 읍/면/동 선택 --</option>`;
 
   loadSido(sidoSel, geoData);
 
