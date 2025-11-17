@@ -240,9 +240,8 @@ async function updateStationList() {
   }
 
   try {
-    const data = await fetchStationsByRegion(regionName);
-    const items = data.features || [];
-    renderStationList(items);
+    const features = await fetchStationsByRegion(regionName); // array of features
+    renderStationList(features);
   } catch (e) {
     console.error("API 오류:", e);
     renderStationList([]);
@@ -259,14 +258,14 @@ function renderStationList(items) {
   }
 
   items.forEach(f => {
-  const props = f.properties;
-  const el = document.createElement("div");
-  el.className = "station-item";
-  el.innerHTML = `
-    <div class="station-name">${props["상호"] || "이름 없음"}</div>
-    <div class="station-addr">${props["정제주소"] || props["주소"] || "-"}</div>
-    <div class="station-status">${props["상태"] || "-"}</div>
-  `;
-    listEl.appendChild(el);
-  });
+     const props = f.properties;
+     const el = document.createElement("div");
+     el.className = "station-item";
+     el.innerHTML = `
+       <div class="station-name">${props["상호"] || "이름 없음"}</div>
+       <div class="station-addr">${props["정제주소"] || props["주소"] || "-"}</div>
+       <div class="station-status">${props["상태"] || "-"}</div>
+     `;
+       listEl.appendChild(el);
+     });
 }
