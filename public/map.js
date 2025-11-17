@@ -26,7 +26,7 @@ export function drawMarkers(map, clusterer, stations) {
         // ✅ 마커 이미지
         const imageSrc =
             "https://map.pstatic.net/resource/api/v2/image/maps/selected-marker/229155@1x.png?version=19&mapping=marker-167";
-        const imageSize = new kakao.maps.Size(30, 40);
+        const imageSize = new kakao.maps.Size(20, 30);
         const imageOption = { offset: new kakao.maps.Point(15, 40) };
         const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
 
