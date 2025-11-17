@@ -240,8 +240,12 @@ async function updateStationList() {
   }
 
   try {
-    const features = await fetchStationsByRegion(regionName); // array of features
-    renderStationList(features);
+    const data = await fetchStationsByRegion(regionName);
+
+    // 서버 응답이 { items: [...] } 면 자동 처리
+    const items = data.items || data;
+
+    renderStationList(items);
   } catch (e) {
     console.error("API 오류:", e);
     renderStationList([]);
@@ -257,9 +261,9 @@ function renderStationList(items) {
     return;
   }
 
-  items.forEach(f => {
-     const props = f.properties;
-     const el = document.createElement("div");
+  items.forEach(item => {
+    const props = item.properties || item;
+    const el = document.createElement("div");
      el.className = "station-item";
      el.innerHTML = `
        <div class="station-name">${props["상호"] || "이름 없음"}</div>
