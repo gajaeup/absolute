@@ -242,10 +242,13 @@ async function updateStationList() {
   try {
     const data = await fetchStationsByRegion(regionName);
 
-    // 서버 응답이 { items: [...] } 면 자동 처리
-    const items = data.items || data;
+    console.log("📦 region API raw data:", data);
+
+    // GeoJSON 기반 → features 배열을 사용해야 함
+    const items = data.features || [];
 
     renderStationList(items);
+
   } catch (e) {
     console.error("API 오류:", e);
     renderStationList([]);
@@ -261,8 +264,8 @@ function renderStationList(items) {
     return;
   }
 
-  items.forEach(item => {
-    const props = item.properties || item;
+  items.forEach(feature => {
+    const props = feature.properties || feature;
     const el = document.createElement("div");
      el.className = "station-item";
      el.innerHTML = `
