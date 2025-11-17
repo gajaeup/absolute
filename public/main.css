@@ -277,7 +277,6 @@ body {
   list-style: none;
   margin: 0;
   padding: 0;
-  border: 1px solid #ccc;
   border-radius: 6px;
   background: #fff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -546,6 +545,9 @@ body {
   font-size: 15px;
 }
 .station-list {
+  position: absolute;
+  top: 80px;
+  left: 100px
   width: 95%;
   max-height: 300px;
   overflow-y: auto;
