@@ -8,30 +8,26 @@ export function switchSearchMode(mode) {
   const tabRegion = document.getElementById("tab-region");
   const stationModule = document.getElementById("station-search-module");
   const regionModule = document.getElementById("region-search-module");
-   const regionList = document.getElementById("region-station-list");
 
   if (mode === "station") {
-     tabStation.classList.add('active');
-     tabRegion.classList.remove('active');
+    tabStation.classList.add("active");
+    tabRegion.classList.remove("active");
 
-    // 검색 모듈 표시/숨김
-     stationModule.classList.add('active');
-     stationModule.classList.remove('hidden');
+    stationModule.classList.remove("hidden");
+    stationModule.classList.add("active");
 
-    regionModule.classList.remove('active');
-    regionModule.classList.add('hidden');
-     regionList.classList.add("hidden");
+    regionModule.classList.add("hidden");
+    regionModule.classList.remove("active");
+  } 
+  else if (mode === "region") {
+    tabRegion.classList.add("active");
+    tabStation.classList.remove("active");
 
-  } else {
-    tabRegion.classList.add('active');
-    tabStation.classList.remove('active');
+    regionModule.classList.remove("hidden");
+    regionModule.classList.add("active");
 
-    regionModule.classList.add('active');
-    regionModule.classList.remove('hidden');
-
-    stationModule.classList.remove('active');
-    stationModule.classList.add('hidden');
-     regionList.classList.remove("hidden");
+    stationModule.classList.add("hidden");
+    stationModule.classList.remove("active");
 
     loadSidoData();
 
