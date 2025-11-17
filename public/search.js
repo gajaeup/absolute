@@ -231,6 +231,7 @@ function getSelectedRegionName() {
 
 async function updateStationList() {
   const regionName = getSelectedRegionName();
+   console.log("📤 보내는 지역명:", regionName);
   const listEl = document.getElementById("region-station-list");
    listEl.classList.remove("hidden");
 
