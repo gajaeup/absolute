@@ -232,6 +232,7 @@ function getSelectedRegionName() {
 async function updateStationList() {
   const regionName = getSelectedRegionName();
   const listEl = document.getElementById("region-station-list");
+   listEl.classList.remove("hidden");
 
   if (!regionName) {
     listEl.innerHTML = `<div class="empty-msg">지역을 선택하세요</div>`;
