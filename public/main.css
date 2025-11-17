@@ -554,6 +554,7 @@ body {
   padding: 10px;
   background: #fafafa;
   border-top: 1px solid #ddd;
+  z-index:9999;
 }
 
 .station-item {
