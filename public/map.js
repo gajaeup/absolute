@@ -5,6 +5,22 @@ export function initMap() {
     center: new kakao.maps.LatLng(36.5, 127.8),
     level: 12,
   });
+  const btnRoadmap = document.getElementById("btn-roadmap");
+  const btnHybrid = document.getElementById("btn-hybrid");
+  
+  btnRoadmap.onclick = () => {
+    map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);
+    btnRoadmap.classList.add("active");
+    btnHybrid.classList.remove("active");
+  };
+
+  // 항공 지도
+  btnHybrid.onclick = () => {
+    map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);
+    btnHybrid.classList.add("active");
+    btnRoadmap.classList.remove("active");
+  };
+
   return map;
 }
 
