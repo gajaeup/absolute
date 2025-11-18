@@ -628,7 +628,7 @@ body {
 
 #map-type-toggle {
   position: absolute;
-  top: 70px;
+  top: 90px;
   right: 20px;
   z-index: 99999;
   display: flex;
@@ -647,11 +647,11 @@ body {
 }
 
 #map-type-toggle button.active {
-  background: #0077ff;
+  background: #00796b;
   color: #fff;
   font-weight: bold;
 }
 
 #map-type-toggle button:hover {
-  background: #f0f0f0;
+  background: #e4e4e4;
 }

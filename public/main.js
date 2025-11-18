@@ -39,7 +39,6 @@ async function loadKakaoSDK() {
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
-  console.log('✅ Frontend Initialized');
   await loadKakaoSDK();
   const map = initMap();
   

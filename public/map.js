@@ -7,7 +7,7 @@ export function initMap() {
   });
   const btnRoadmap = document.getElementById("btn-roadmap");
   const btnHybrid = document.getElementById("btn-hybrid");
-  
+
   btnRoadmap.onclick = () => {
     map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);
     btnRoadmap.classList.add("active");
@@ -25,7 +25,6 @@ export function initMap() {
 }
 
 export function drawMarkers(map, clusterer, stations) {
-  console.log('📍 stations 샘플:', stations[0]);
   const markers = [];
   let openOverlay = null;
   let closeTimer = null;
