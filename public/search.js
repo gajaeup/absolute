@@ -273,6 +273,25 @@ function renderStationList(items) {
        <div class="station-addr">${props["정제주소"] || props["주소"] || "-"}</div>
        <div class="station-status">${props["상태"] || "-"}</div>
      `;
+    el.addEventListener("click", () => {
+      const pos = new kakao.maps.LatLng(lat, lng);
+
+      // 지도 이동
+      map.setLevel(4);   // 줌 레벨 조정 (원하면 수정 가능)
+      map.panTo(pos);
+
+      // 🔥 선택된 주유소 상세 패널도 열고 싶으면 이벤트 발생
+      window.dispatchEvent(new CustomEvent("stationSelected", {
+        detail: { 
+          name: props["상호"], 
+          addr: props["정제주소"] || props["주소"],
+          status: props["상태"],
+          lat,
+          lng
+        }
+      }));
+    });
+    
        listEl.appendChild(el);
      });
 }
