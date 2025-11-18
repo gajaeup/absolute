@@ -607,3 +607,11 @@ body {
   background: #f8fafc;
   border: 1px dashed #cbd5e1;
 }
+
+/* ===== 목록 패널 안 사진 크기 조절 ===== */
+.station-detail__image img {
+  width: 100%;
+  height: 140px; /* ← 여기 숫자만 조절! */
+  object-fit: cover;
+  border-radius: 8px;
+}
