@@ -405,10 +405,20 @@ body {
 }
 
 .roadview-box {
-  width: 100%;
-  height: 200px;
-  margin-top: 12px;
-  background: #f1f1f1;
+  position: absolute;
+  top: 100px;
+    /* 화면 위에서 20px 아래 */
+  right: 20px;
+    /* 화면 오른쪽에서 20px 왼쪽 */
+  width: 350px;
+    /* 로드뷰 창 너비 */
+  height: 250px;
+    /* 로드뷰 창 높이 */
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  z-index: 99999;/
 }
 
 .hidden {
