@@ -266,6 +266,7 @@ function renderStationList(items) {
 
   items.forEach(feature => {
     const props = feature.properties || feature;
+    const [lng, lat] = feature.geometry.coordinates;
     const el = document.createElement("div");
      el.className = "station-item";
      el.innerHTML = `
