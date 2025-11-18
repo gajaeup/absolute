@@ -33,7 +33,7 @@ body {
 }
 
 .logo-image {
-  width: 140px; /* 이미지 크기 조절 */
+  width: 170px; /* 이미지 크기 조절 */
   height: auto;
   display: block; /* 여백 제거 */
 }
@@ -574,4 +574,37 @@ body {
   font-size: 12px;
   color: #444;
   margin-top: 4px;
+}
+
+/* ===== 목록 패널 안 주유소 상세 카드 확장 섹션 ===== */
+.station-detail__section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.station-detail__section-title {
+  margin: 0 0 6px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111;
+}
+
+.station-detail__section-body {
+  margin: 0;
+  font-size: 13px;
+  color: #444;
+  line-height: 1.5;
+}
+
+.station-detail__section-body.is-muted {
+  color: #777;
+}
+
+.station-detail__metrics {
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
 }
