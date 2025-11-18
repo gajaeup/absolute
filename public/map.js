@@ -55,7 +55,7 @@ export function drawMarkers(map, clusterer, stations) {
       <div class="info-body">
         <div class="info-name">${name}</div>
         <div class="info-addr">${addr}</div>
-        <div class="info-status"><span>${status}</span></div>
+        <div class="info-status">상태: <span class="status-badge" style="background:${color};">${status}</span></div>
       </div>
     `;
 
