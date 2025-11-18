@@ -126,6 +126,33 @@
         font-size: 1.1em;
       }
 
+      /* 데이터 출처 테이블 */
+      .data-table {
+        border-collapse: collapse;
+        margin-top: 16px;
+        font-size: 16px;
+        table-layout: fixed; /* 각 열을 균등 분배 */
+        width: 100%;
+      }
+
+      .data-table th,
+      .data-table td {
+        border: 1px solid #333;
+        padding: 10px 18px;
+      }
+
+      .data-table th {
+        background-color: #e5e5e5;
+        font-weight: 600;
+        text-align: center;
+      }
+
+      .data-table th:first-child,
+      .data-table td:first-child {
+        width: 120px; /* 첫 번째 열만 원하는 크기로 고정 */
+        text-align: center;
+      }
+
       .faq-list {
         margin-bottom: 120px; /* FAQ와 footer 간격 띄우기 */
       }
@@ -145,7 +172,7 @@
             <a href="background.html" data-info="background">구현 배경</a>
           </li>
           <li><a href="casestudy.html" data-info="cases">실제 사례</a></li>
-          <li><a href="faq1.html" data-info="faq">FAQ</a></li>
+          <li><a href="faq.html" data-info="faq">FAQ</a></li>
           <li><a href="datasource.html" data-info="data">데이터 출처</a></li>
         </ul>
       </nav>
@@ -157,24 +184,129 @@
 
     <main>
       <section class="faq-list">
-        <details>
-          <summary>폐주유소 현황 데이터</summary>
-          <p>ㄱㄴㄷ</p>
+        <!-- 폐주유소 데이터 -->
+        <details open>
+          <summary>폐주유소 데이터</summary>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>항목</th>
+                <th>폐주유소 데이터</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>출처</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>링크</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
         </details>
 
-        <details>
-          <summary>교통량, 관광지수, 상권, 인구</summary>
-          <ul>
-            <li>교통량 -</li>
-            <li>관광지수 -</li>
-            <li>상권 -</li>
-            <li>인구 -</li>
-          </ul>
+        <!-- 입지 분석 지표 -->
+        <details open>
+          <summary>입지 분석 지표</summary>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>항목</th>
+                <th>교통량</th>
+                <th>관광지수</th>
+                <th>상권</th>
+                <th>인구</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>출처</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>링크</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
         </details>
 
-        <details>
-          <summary>참고 논문</summary>
-          <p>ㄱㄴㄷ</p>
+        <!-- 참고 문헌 -->
+        <details open>
+          <summary>참고 문헌</summary>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>항목</th>
+                <th>내용</th>
+                <th>ㄱㄴㄷ</th>
+                <th>알고리즘</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>출처</td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>링크</td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </details>
+
+        <!-- 이미지, 아이콘 -->
+        <details open>
+          <summary>이미지</summary>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>항목</th>
+                <th>홈픽</th>
+                <th>분더퓨얼</th>
+                <th>기버스테이션</th>
+                <th>하만스빅버거</th>
+                <th>사당셀프주유소</th>
+                <th>슈퍼스테이션</th>
+                <th>아이콘 로고</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>출처</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>링크</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
         </details>
       </section>
     </main>
