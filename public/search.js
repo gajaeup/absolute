@@ -74,7 +74,7 @@ export function initRegionSearch(geoData, map) {
     loadSigungu(sidoSel.value, sigSel, geoData);
     drawSidoPolygon(sidoSel.value, geoData, map);
 
-    await updateStationList();
+    await updateStationList(map);
   });
 
   // 시군구 선택
@@ -84,14 +84,14 @@ export function initRegionSearch(geoData, map) {
     loadEmd(sidoSel.value, sigSel.value, emdSel, geoData);
     drawSigunguPolygon(sidoSel.value, sigSel.value, geoData, map);
 
-    await updateStationList();
+    await updateStationList(map);
   });
 
   // 읍면동 선택
   emdSel.addEventListener("change", async () => {
     const fullName = emdSel.value;
     drawEmdPolygon(fullName, geoData, map);
-    await updateStationList();
+    await updateStationList(map);
   });
 }
 
@@ -229,7 +229,7 @@ function getSelectedRegionName() {
   return sido;
 }
 
-async function updateStationList() {
+async function updateStationList(map) {
   const regionName = getSelectedRegionName();
   const listEl = document.getElementById("region-station-list");
    listEl.classList.remove("hidden");
@@ -247,15 +247,15 @@ async function updateStationList() {
     // GeoJSON 기반 → features 배열을 사용해야 함
     const items = data.features || [];
 
-    renderStationList(items);
+    renderStationList(items,map);
 
   } catch (e) {
     console.error("API 오류:", e);
-    renderStationList([]);
+    renderStationList([],map);
   }
 }
 
-function renderStationList(items) {
+function renderStationList(items,map) {
   const listEl = document.getElementById("region-station-list");
   listEl.innerHTML = "";
 
