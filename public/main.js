@@ -28,10 +28,15 @@ async function loadKakaoSDK() {
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${apiKey}&libraries=services,clusterer`;
     script.onload = () => {
       console.log('✅ Kakao SDK loaded');
-      kakao.maps.load(() => {
-        console.log('✅ kakao.maps.load() 완료');
-        resolve();
-      });
+
+      // ⭐ HTML 로딩 완료까지 반드시 기다림
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+          kakao.maps.load(resolve);
+        });
+      } else {
+        kakao.maps.load(resolve);
+      }
     };
     script.onerror = (err) => reject(err);
     document.head.appendChild(script);
