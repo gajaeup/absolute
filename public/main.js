@@ -28,15 +28,10 @@ async function loadKakaoSDK() {
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${apiKey}&libraries=services,clusterer`;
     script.onload = () => {
       console.log('✅ Kakao SDK loaded');
-
-      // ⭐ HTML 로딩 완료까지 반드시 기다림
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", () => {
-          kakao.maps.load(resolve);
-        });
-      } else {
-        kakao.maps.load(resolve);
-      }
+      kakao.maps.load(() => {
+        console.log('✅ kakao.maps.load() 완료');
+        resolve();
+      });
     };
     script.onerror = (err) => reject(err);
     document.head.appendChild(script);
@@ -46,10 +41,11 @@ async function loadKakaoSDK() {
 window.addEventListener('DOMContentLoaded', async () => {
   console.log('✅ Frontend Initialized');
   await loadKakaoSDK();
+  const map = initMap();
+  
   initSearchTabs();
 
   // 1️⃣ 지도 초기화
-  const map = initMap();
   const clusterer = new kakao.maps.MarkerClusterer({
     map,
     averageCenter: true,
