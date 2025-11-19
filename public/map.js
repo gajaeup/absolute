@@ -100,7 +100,7 @@ export function drawMarkers(map, clusterer, stations) {
 
       window.dispatchEvent(
         new CustomEvent('stationSelected', {
-          detail: { stationId, name, addr, status, lat, lng, imgUrl },
+          detail: { name, addr, status, lat, lng, imgUrl },
         })
       );
 
