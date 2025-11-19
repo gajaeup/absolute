@@ -70,15 +70,25 @@ export async function fetchMLRecommendation(stationId) {
 }
 
 // 지표(통계) 조회
-export async function fetchStationStatics(stationId) {
-  if (!stationId) return {};
-
-  const url = `${API_BASE}/api/stations/${stationId}/stats`;
-
-  if (!res.ok) {
-    console.error('📉 statics API error:', res.status);
+export async function fetchStationStats(stationId) {
+  if (!stationId) {
+    console.warn('⚠ stationId 없음, stats 호출 스킵');
     return {};
   }
 
-  return res.json();
+  const url = `${API_BASE}/stations/${stationId}/stats`; // ★ 여기 주의: /api 유무
+
+  console.log('📡 Fetch stats:', url);
+
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    const msg = await res.text();
+    console.error(`❌ GET ${url} failed (${res.status}): ${msg}`);
+    throw new Error(`stats API 실패: ${res.status}`);
+  }
+
+  const data = await res.json();
+  console.log('✅ stats 응답:', data);
+  return data;
 }

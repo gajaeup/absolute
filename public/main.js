@@ -206,15 +206,18 @@ export async function initSearch(map, clusterer) {
   async function fetchAndRenderMetrics(station) {
     const metricsBox = document.getElementById('station-metrics');
     const loadingText = document.getElementById('metrics-loading-text');
-
     if (!metricsBox) return;
+
+    if (loadingText) {
+      loadingText.textContent = '지표를 불러오는 중입니다...';
+    }
+
     try {
-      const data = await fetchStationStatics(station.stationId);
-      console.log('📊 statics data:', data);
+      console.log('📡 stats 요청 stationId:', station.stationId);
+      const data = await fetchStationStats(station.stationId);
+      console.log('📊 stats data:', data);
 
-      // 지표는 percentile 안에 들어있음
       const percentile = data && data.percentile;
-
       if (!percentile) {
         if (loadingText) {
           loadingText.textContent = '표시할 지표가 없습니다.';
