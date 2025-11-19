@@ -243,33 +243,44 @@ export async function initSearch(map, clusterer) {
     const box = document.getElementById('station-metrics');
     if (!box) return;
 
-    // 캔버스만 남기고 안쪽 비우기
-    box.innerHTML = `
-      <canvas id="metrics-chart"></canvas>
-    `;
+    // 추천 문구 같은 건 제외하고, 숫자인 값만 골라내기
+    const entries = Object.entries(metrics).filter(([key, value]) => {
+      if (key === 'recommendation') return false;
+      if (key === 'station_id' || key === 'id') return false;
+      return typeof value === 'number' && !Number.isNaN(value);
+    });
 
-    const canvas = document.getElementById('metrics-chart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    // 👉 실제 키 이름에 맞게 수정하면 됨
-    const labels = ['교통량', '인구', '관광', '상권'];
-    const values = [
-      metrics.traffic ?? 0,
-      metrics.population ?? 0,
-      metrics.tourism ?? 0,
-      metrics.commerce ?? 0,
-    ];
-
-    if (values.every((v) => v === 0 || v == null)) {
+    if (!entries.length) {
       box.innerHTML =
         '<p class="station-detail__section-body is-muted">표시할 지표가 없습니다.</p>';
       return;
     }
 
-    // 레이더 차트 (막대그래프로 바꾸고 싶으면 type: 'bar')
+    // 키 → 한글 라벨 맵핑 (없으면 그냥 원래 키 보여주기)
+    const keyLabelMap = {
+      traffic: '교통량',
+      traffic_index: '교통량',
+      population: '인구',
+      population_index: '인구',
+      tourism: '관광',
+      tourism_index: '관광',
+      commerce: '상권',
+      commercial: '상권',
+      commercial_index: '상권',
+    };
+
+    const labels = entries.map(([key]) => keyLabelMap[key] || key);
+    const values = entries.map(([, value]) => value);
+
+    // 캔버스만 남기기
+    box.innerHTML = '<canvas id="metrics-chart"></canvas>';
+
+    const canvas = document.getElementById('metrics-chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
     new Chart(ctx, {
-      type: 'radar',
+      type: 'radar', // 필요하면 'bar' 로 바꿔도 됨
       data: {
         labels,
         datasets: [
