@@ -1,5 +1,5 @@
 // public/js/api.js
-export const API_BASE = "https://api.restation.site";// 배포 시 변경
+export const API_BASE = 'https://api.restation.site'; // 배포 시 변경
 
 // 지도 범위 내 주유소 목록
 export async function fetchStationsInMap(map, limit = 10000) {
@@ -14,7 +14,7 @@ export async function fetchStationsInMap(map, limit = 10000) {
 
   // FastAPI 요구 파라미터명에 맞춰 URL 구성
   const url = `${API_BASE}/api/stations/map?lat1=${lat1}&lng1=${lng1}&lat2=${lat2}&lng2=${lng2}&limit=${limit}`;
-  console.log("📡 Fetching stations:", url);
+  console.log('📡 Fetching stations:', url);
 
   const res = await fetch(url);
   if (!res.ok) {
@@ -23,13 +23,15 @@ export async function fetchStationsInMap(map, limit = 10000) {
   }
 
   const data = await res.json();
-    console.log("✅ API 응답:", data);
-    return data;
+  console.log('✅ API 응답:', data);
+  return data;
 }
 
 // 지역별 주유소 목록
 export async function fetchStationsByRegion(code) {
-  const url = `${API_BASE}/api/stations/region/${encodeURIComponent(code)}?limit=5000`;
+  const url = `${API_BASE}/api/stations/region/${encodeURIComponent(
+    code
+  )}?limit=5000`;
   const res = await fetch(url);
 
   if (!res.ok) {
@@ -38,13 +40,15 @@ export async function fetchStationsByRegion(code) {
   }
 
   const data = await res.json();
-  return data; 
+  return data;
 }
 
 // 키워드 검색
 export async function searchStations(keyword) {
-  const url = `${API_BASE}/api/stations/search?query=${encodeURIComponent(keyword)}`;
-  console.log("🔍 검색 요청:", url);
+  const url = `${API_BASE}/api/stations/search?query=${encodeURIComponent(
+    keyword
+  )}`;
+  console.log('🔍 검색 요청:', url);
   const res = await fetch(url);
   if (!res.ok) return [];
   const data = await res.json();
@@ -59,7 +63,22 @@ export async function fetchRecommendation(stationId) {
 
 // ML 추천
 export async function fetchMLRecommendation(stationId) {
-  const res = await fetch(`${API_BASE}/api/ml-recommend?station_id=${stationId}`);
+  const res = await fetch(
+    `${API_BASE}/api/ml-recommend?station_id=${stationId}`
+  );
   return res.ok ? res.json() : {};
 }
 
+// 지표(통계) 조회
+export async function fetchStationStatics(stationId) {
+  if (!stationId) return {};
+
+  const res = await fetch(`${API_BASE}/api/stations/${stationId}/statics`);
+
+  if (!res.ok) {
+    console.error('📉 statics API error:', res.status);
+    return {};
+  }
+
+  return res.json();
+}

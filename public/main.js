@@ -1,13 +1,23 @@
 // public/js/main.js
-import { initMap, drawMarkers, highlightMarker, resetHighlight, setMapInstance } from './map.js';
-import { fetchStationsInMap, searchStations, fetchRecommendation } from './api.js';
+import {
+  initMap,
+  drawMarkers,
+  highlightMarker,
+  resetHighlight,
+  setMapInstance,
+} from './map.js';
+import {
+  fetchStationsInMap,
+  searchStations,
+  fetchRecommendation,
+  fetchStationStatics,
+} from './api.js';
 import {
   switchSearchMode,
   initSearchTabs,
   loadSidoData,
   initRegionSearch,
 } from './search.js';
-
 
 async function loadKakaoSDK() {
   let apiKey;
@@ -145,7 +155,7 @@ export async function initSearch(map, clusterer) {
           map.panTo(pos);
 
           const allMarkers = clusterer.getMarkers();
-          const target = allMarkers.find(m => {
+          const target = allMarkers.find((m) => {
             const p = m.getPosition();
             return (
               Math.abs(p.getLat() - station.lat) < 0.00001 &&
@@ -187,9 +197,107 @@ export async function initSearch(map, clusterer) {
   const closeBtns = {
     list: document.getElementById('list-panel-close'),
     guide: document.getElementById('guide-panel-close'),
-
   };
   const searchBox = document.querySelector('.search-container');
+
+  // ==========================
+  //   지표 API + Chart.js
+  // ==========================
+  async function fetchAndRenderMetrics(station) {
+    const metricsBox = document.getElementById('station-metrics');
+    const loadingText = document.getElementById('metrics-loading-text');
+
+    if (!metricsBox) return;
+    if (loadingText) {
+      loadingText.textContent = '지표를 불러오는 중입니다...';
+    }
+
+    try {
+      // 🔗 station.stationId는 우리가 map.js에서 넣어준 값
+      const data = await fetchStationStatics(station.stationId);
+
+      // 예시 응답 가정:
+      // {
+      //   traffic: 0.82,
+      //   population: 0.64,
+      //   tourism: 0.3,
+      //   commerce: 0.75,
+      //   recommendation: "○○동은 유동인구와 상권지수가 높아 카페형 복합공간이 적합합니다."
+      // }
+
+      if (data.recommendation) {
+        const recEl = document.getElementById('station-recommendation');
+        if (recEl) recEl.textContent = data.recommendation;
+      }
+
+      renderMetricsChart(data);
+    } catch (err) {
+      console.error('지표 불러오기 실패:', err);
+      if (loadingText) {
+        loadingText.textContent = '지표를 불러오지 못했습니다.';
+      }
+    }
+  }
+
+  function renderMetricsChart(metrics) {
+    const box = document.getElementById('station-metrics');
+    if (!box) return;
+
+    // 캔버스만 남기고 안쪽 비우기
+    box.innerHTML = `
+      <canvas id="metrics-chart"></canvas>
+    `;
+
+    const canvas = document.getElementById('metrics-chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    // 👉 실제 키 이름에 맞게 수정하면 됨
+    const labels = ['교통량', '인구', '관광', '상권'];
+    const values = [
+      metrics.traffic ?? 0,
+      metrics.population ?? 0,
+      metrics.tourism ?? 0,
+      metrics.commerce ?? 0,
+    ];
+
+    if (values.every((v) => v === 0 || v == null)) {
+      box.innerHTML =
+        '<p class="station-detail__section-body is-muted">표시할 지표가 없습니다.</p>';
+      return;
+    }
+
+    // 레이더 차트 (막대그래프로 바꾸고 싶으면 type: 'bar')
+    new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: '지표 점수',
+            data: values,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            suggestedMin: 0,
+            suggestedMax: 1,
+            ticks: { stepSize: 0.2 },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+        },
+      },
+    });
+
+    canvas.style.height = '180px';
+  }
 
   // 유틸
   const isOpen = (p) => p && p.classList.contains('is-open');
@@ -212,7 +320,6 @@ export async function initSearch(map, clusterer) {
     }
   }
 
-
   function openPanel(panel) {
     if (!panel) return;
     closeAllPanels(); // ✅ 다른 패널은 자동으로 닫힘
@@ -232,7 +339,7 @@ export async function initSearch(map, clusterer) {
     if (!anyOpen()) pushSearch(false); // 둘 다 닫히면 검색창 원위치
     syncActiveState(); // 🔹 버튼 active 상태 반영
   }
-  
+
   function closeAllPanels() {
     Object.values(panels).forEach((p) => {
       if (p && isOpen(p)) {
@@ -276,37 +383,38 @@ export async function initSearch(map, clusterer) {
   // ESC로 닫기
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeAllPanels();
-
   });
 
   //👇수정사항
   // 🔔 지도 카드에서 주유소를 클릭했을 때 목록 패널 열기
   window.addEventListener('stationSelected', async (e) => {
     const station = e.detail;
-    
-    const clusterer = window.clustererRef
+
+    const clusterer = window.clustererRef;
     if (clusterer) {
       const allMarkers = clusterer.getMarkers();
-    const target = allMarkers.find(m => {
-      const p = m.getPosition();
-      return (
-        Math.abs(p.getLat() - station.lat) < 0.000001 &&
-        Math.abs(p.getLng() - station.lng) < 0.000001 
-      );
-    });
-    if (target) {
-      highlightMarker(clusterer, target);
+      const target = allMarkers.find((m) => {
+        const p = m.getPosition();
+        return (
+          Math.abs(p.getLat() - station.lat) < 0.000001 &&
+          Math.abs(p.getLng() - station.lng) < 0.000001
+        );
+      });
+      if (target) {
+        highlightMarker(clusterer, target);
       }
     }
     const panel = panels.list;
     if (!panel) return;
 
-  const stationId = `${Math.round(station.lat * 1_000_000)}_${Math.round(station.lng * 1_000_000)}`;
-  console.log("📌 추천 요청 ID:", stationId);
+    const stationId = `${Math.round(station.lat * 1_000_000)}_${Math.round(
+      station.lng * 1_000_000
+    )}`;
+    console.log('📌 추천 요청 ID:', stationId);
 
-  // 2) 추천 API 호출
-  const recData = await fetchRecommendation(stationId);
-  console.log("📌 추천 결과:", recData);
+    // 2) 추천 API 호출
+    const recData = await fetchRecommendation(stationId);
+    console.log('📌 추천 결과:', recData);
 
     const body = panel.querySelector('.side-panel__body');
     if (body) {
@@ -337,47 +445,51 @@ export async function initSearch(map, clusterer) {
           <p class="station-detail__section-body" id="station-recommendation">
             ${
               recData
-        ? `
+                ? `
                 ① ${recData.recommend1}<br>
                 ② ${recData.recommend2}<br>
                 ③ ${recData.recommend3}`
-                : "추천 데이터가 없습니다."
+                : '추천 데이터가 없습니다.'
             }
           </p>
         </section>
 
         <!-- 지표 그래프 칸 (나중에 차트/지표값 들어갈 자리) -->
         <section class="station-detail__section">
-          <h3 class="station-detail__section-title">지표 요약</h3>
-          <div class="station-detail__metrics" id="station-metrics">
-            <!-- 나중에 그래프/지표 컴포넌트 렌더링 예정 -->
-            <p class="station-detail__section-body is-muted">
-              교통량, 인구, 상권 등 지표를 시각화한 그래프가 이 영역에 표시됩니다.
-            </p>
-          </div>
-        </section>
+              <h3 class="station-detail__section-title">지표 요약</h3>
+              <div class="station-detail__metrics" id="station-metrics">
+                <p class="station-detail__section-body is-muted" id="metrics-loading-text">
+                  지표를 불러오는 중입니다...
+                </p>
+                <canvas id="metrics-chart"></canvas>
+              </div>
+            </section>
       </div>
     </article>
     `;
     }
+
+    // 🔥 여기서 API 호출 + 그래프 그리기
+    fetchAndRenderMetrics(station);
 
     // 📋 목록 패널 열고, 검색창 오른쪽으로 밀기 + 버튼 active 처리
     openPanel(panel);
     showRoadview(station.lat, station.lng);
   });
   function showRoadview(lat, lng) {
-  const container = document.getElementById('floating-roadview');
-  container.classList.remove('hidden');
-  container.innerHTML = '';
+    const container = document.getElementById('floating-roadview');
+    container.classList.remove('hidden');
+    container.innerHTML = '';
 
-  const pos = new kakao.maps.LatLng(lat, lng);
-  const rv = new kakao.maps.Roadview(container);
-  const rvc = new kakao.maps.RoadviewClient();
+    const pos = new kakao.maps.LatLng(lat, lng);
+    const rv = new kakao.maps.Roadview(container);
+    const rvc = new kakao.maps.RoadviewClient();
 
-  rvc.getNearestPanoId(pos, 50, (panoId) => {
-    if (panoId) rv.setPanoId(panoId, pos);
-    else container.innerHTML =
-      "<p style='padding:25px;text-align:center'>로드뷰 없음</p>";
-  });
-}
+    rvc.getNearestPanoId(pos, 50, (panoId) => {
+      if (panoId) rv.setPanoId(panoId, pos);
+      else
+        container.innerHTML =
+          "<p style='padding:25px;text-align:center'>로드뷰 없음</p>";
+    });
+  }
 })();

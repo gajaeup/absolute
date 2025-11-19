@@ -9,20 +9,20 @@ export function initMap() {
     center: new kakao.maps.LatLng(36.5, 127.8),
     level: 12,
   });
-  const btnRoadmap = document.getElementById("btn-roadmap");
-  const btnHybrid = document.getElementById("btn-hybrid");
+  const btnRoadmap = document.getElementById('btn-roadmap');
+  const btnHybrid = document.getElementById('btn-hybrid');
 
   btnRoadmap.onclick = () => {
     map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);
-    btnRoadmap.classList.add("active");
-    btnHybrid.classList.remove("active");
+    btnRoadmap.classList.add('active');
+    btnHybrid.classList.remove('active');
   };
 
   // 항공 지도
   btnHybrid.onclick = () => {
     map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);
-    btnHybrid.classList.add("active");
-    btnRoadmap.classList.remove("active");
+    btnHybrid.classList.add('active');
+    btnRoadmap.classList.remove('active');
   };
 
   return map;
@@ -40,14 +40,26 @@ export function drawMarkers(map, clusterer, stations) {
     const addr = station['정제주소'] || station['주소'] || '주소정보 없음';
     const status = station['상태'] || '정보 없음';
 
+    //필드 이름 조정 필요
+    const stationId =
+      station.id ??
+      station.station_id ??
+      station['id'] ??
+      station['station_id'] ??
+      null;
+
     if (isNaN(lat) || isNaN(lng)) return; // 좌표 없으면 스킵
 
-        // ✅ 마커 이미지
-    const imageSrc ="https://map.pstatic.net/resource/api/v2/image/maps/selected-marker/229155@1x.png?version=19&mapping=marker-167";
+    // ✅ 마커 이미지
+    const imageSrc =
+      'https://map.pstatic.net/resource/api/v2/image/maps/selected-marker/229155@1x.png?version=19&mapping=marker-167';
     const imageSize = new kakao.maps.Size(20, 28);
     const imageOption = { offset: new kakao.maps.Point(15, 40) };
-    const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
-    
+    const markerImage = new kakao.maps.MarkerImage(
+      imageSrc,
+      imageSize,
+      imageOption
+    );
 
     const marker = new kakao.maps.Marker({
       position: new kakao.maps.LatLng(lat, lng),
@@ -96,7 +108,7 @@ export function drawMarkers(map, clusterer, stations) {
 
       window.dispatchEvent(
         new CustomEvent('stationSelected', {
-          detail: { name, addr, status, lat, lng, imgUrl },
+          detail: { stationId, name, addr, status, lat, lng, imgUrl },
         })
       );
 
@@ -119,7 +131,6 @@ export function drawMarkers(map, clusterer, stations) {
       openOverlay = overlay;
     });
 
-
     // ========== 마우스 아웃 ==========
     kakao.maps.event.addListener(marker, 'mouseout', () => {
       closeTimer = setTimeout(() => {
@@ -135,28 +146,27 @@ export function drawMarkers(map, clusterer, stations) {
   });
 
   clusterer.addMarkers(markers);
-
 }
 export function highlightMarker(clusterer, targetMarker) {
-  resetHighlight(clusterer);  
+  resetHighlight(clusterer);
   if (!targetMarker) return;
   const imageSrc =
-    "https://map.pstatic.net/resource/api/v2/image/maps/selected-marker/229155@1x.png?version=19&mapping=marker-167";
+    'https://map.pstatic.net/resource/api/v2/image/maps/selected-marker/229155@1x.png?version=19&mapping=marker-167';
   const largeSize = new kakao.maps.Size(35, 45); // 확 키운 버전
 
   const largeImage = new kakao.maps.MarkerImage(imageSrc, largeSize, {
     offset: new kakao.maps.Point(20, 55),
   });
   if (!mapInstance) {
-    console.error("mapInstance가 설정되지 않았습니다.");
+    console.error('mapInstance가 설정되지 않았습니다.');
     return;
   }
   const position = targetMarker.getPosition();
   const bigMarker = new kakao.maps.Marker({
     position: position,
     image: largeImage,
-    zIndex: 999,    // ★ 다른 마커들보다 무조건 위에 보이도록 설정
-    map: mapInstance // 지도에 표시
+    zIndex: 999, // ★ 다른 마커들보다 무조건 위에 보이도록 설정
+    map: mapInstance, // 지도에 표시
   });
   kakao.maps.event.addListener(bigMarker, 'mouseover', () => {
     kakao.maps.event.trigger(targetMarker, 'mouseover');
@@ -179,4 +189,3 @@ export function resetHighlight(clusterer) {
   lastHighlightedMarker.setMap(null);
   lastHighlightedMarker = null;
 }
-
