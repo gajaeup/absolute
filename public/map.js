@@ -39,11 +39,11 @@ export function drawMarkers(map, clusterer, stations) {
     if (isNaN(lat) || isNaN(lng)) return; // 좌표 없으면 스킵
 
         // ✅ 마커 이미지
-        const imageSrc =
-            "https://map.pstatic.net/resource/api/v2/image/maps/selected-marker/229155@1x.png?version=19&mapping=marker-167";
-        const imageSize = new kakao.maps.Size(20, 30);
-        const imageOption = { offset: new kakao.maps.Point(15, 40) };
-        const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+    const imageSrc ="https://map.pstatic.net/resource/api/v2/image/maps/selected-marker/229155@1x.png?version=19&mapping=marker-167";
+    const imageSize = new kakao.maps.Size(20, 28);
+    const imageOption = { offset: new kakao.maps.Point(15, 40) };
+    const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+    
 
     const marker = new kakao.maps.Marker({
       position: new kakao.maps.LatLng(lat, lng),
@@ -107,6 +107,7 @@ export function drawMarkers(map, clusterer, stations) {
       yAnchor: 1.5,
     });
 
+
     // ========== 마우스 오버 ==========
     kakao.maps.event.addListener(marker, 'mouseover', () => {
       if (closeTimer) clearTimeout(closeTimer);
@@ -128,38 +129,32 @@ export function drawMarkers(map, clusterer, stations) {
     });
 
     markers.push(marker);
-
-    markers.push(marker);
   });
 
   clusterer.addMarkers(markers);
+
 }
+export function highlightMarker(clusterer, targetMarker) {
+  const imageSrc =
+    "https://map.pstatic.net/resource/api/v2/image/maps/selected-marker/229155@1x.png?version=19&mapping=marker-167";
 
-export function highlightMarkers(clusterer, stations) {
-  const allMarkers = clusterer.getMarkers();
+  const normalSize = new kakao.maps.Size(20, 30);
+  const largeSize = new kakao.maps.Size(30, 45);
 
-  const highlightImage = new kakao.maps.MarkerImage(
-    'https://map.pstatic.net/resource/api/v2/image/maps/selected-marker/229155@1x.png?version=19&mapping=marker-167',
-    new kakao.maps.Size(35, 45),
-    { offset: new kakao.maps.Point(25, 65) }
-  );
-
-  // 검색된 마커만 다시 강조
-  stations.forEach((s) => {
-    const targetLat = parseFloat(s.lat ?? s['위도']);
-    const targetLng = parseFloat(s.lng ?? s['경도']);
-
-    const matched = allMarkers.find((m) => {
-      const pos = m.getPosition();
-      return (
-        Math.abs(pos.getLat() - targetLat) < 0.001 &&
-        Math.abs(pos.getLng() - targetLng) < 0.001
-      );
-    });
-
-    if (matched) {
-      matched.setImage(highlightImage);
-      matched.setZIndex(999); // 강조된 마커 위로 올리기
-    }
+  const normalImage = new kakao.maps.MarkerImage(imageSrc, normalSize, {
+    offset: new kakao.maps.Point(15, 40),
   });
+
+  const largeImage = new kakao.maps.MarkerImage(imageSrc, largeSize, {
+    offset: new kakao.maps.Point(15, 40),
+  });
+
+  const allMarkers = clusterer.getMarkers();
+  allMarkers.forEach(m => m.setImage(normalImage));
+
+  // 2️⃣ 내가 클릭한 마커만 크게 적용
+  targetMarker.setImage(largeImage);
+  targetMarker.setZIndex(99999);
 }
+
+

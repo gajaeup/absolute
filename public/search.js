@@ -46,7 +46,7 @@ export function loadSidoData() {
   const selectSido = document.getElementById("select-sido");
   if (!window.geoData || !window.geoData.sido) return;
 
-  selectSido.innerHTML = `<option value="">-- 시/도 선택 --</option>`;
+  selectSido.innerHTML = `<option value=""> 시/도 선택 </option>`;
 
   window.geoData.sido.features.forEach(f => {
     selectSido.add(new Option(f.properties.CTP_KOR_NM, f.properties.CTP_KOR_NM));
@@ -61,8 +61,8 @@ export function initRegionSearch(geoData, map) {
   const sigSel = document.getElementById("select-sigungu");
   const emdSel = document.getElementById("select-eupmyeondong");
 
-  sigSel.innerHTML = `<option value="">-- 시/군/구 선택 --</option>`;
-  emdSel.innerHTML = `<option value="">-- 읍/면/동 선택 --</option>`;
+  sigSel.innerHTML = `<option value=""> 시/군/구 선택 </option>`;
+  emdSel.innerHTML = `<option value=""> 읍/면/동 선택 </option>`;
 
   loadSido(sidoSel, geoData);
 
@@ -107,7 +107,7 @@ function loadSido(select, geoData) {
 }
 
 function loadSigungu(sido, select, geoData) {
-  select.innerHTML = `<option value="">-- 시/군/구 선택 --</option>`;
+  select.innerHTML = `<option value=""> 시/군/구 선택 </option>`;
 
   const codeMap = {
     서울특별시:"11", 부산광역시:"26", 대구광역시:"27", 인천광역시:"28",
@@ -127,7 +127,7 @@ function loadSigungu(sido, select, geoData) {
 }
 
 function loadEmd(sido, sig, select, geoData) {
-  select.innerHTML = `<option value="">-- 읍/면/동 선택 --</option>`;
+  select.innerHTML = `<option value=""> 읍/면/동 선택 </option>`;
 
   const prefix = `${sido} ${sig}`;
 

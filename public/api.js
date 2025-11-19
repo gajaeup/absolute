@@ -53,7 +53,7 @@ export async function searchStations(keyword) {
 
 // 추천 결과
 export async function fetchRecommendation(stationId) {
-  const res = await fetch(`${API_BASE}/api/recommend?station_id=${stationId}`);
+  const res = await fetch(`${API_BASE}/api/stations/${stationId}/recommend`);
   return res.ok ? res.json() : {};
 }
 
