@@ -587,6 +587,25 @@ body {
 }
 
 /* ===== 목록 패널 안 주유소 상세 카드 확장 섹션 ===== */
+.btn-view-report {
+  display: inline-block;
+  width: 100%;
+  padding: 12px 0;
+  background-color: #2563eb;
+  /* 파란색 계열 */
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 8px;
+  text-align: center;
+  transition: background-color 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-view-report:hover {
+  background-color: #1d4ed8;
+  /* 호버 시 좀 더 진하게 */
+}
 
 .station-detail__section {
   margin-top: 14px;

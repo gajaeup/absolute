@@ -322,9 +322,16 @@ export async function initSearch(map, clusterer) {
         <!-- 기본 정보 -->
         <p class="station-detail__name">주유소명 : ${station.name}</p>
         <p class="station-detail__addr">주소 : ${station.addr}</p>
-        <p class="station-detail__status">상태 : ${station.status}</p>
+        <p class="station-detail__status">상태 : ${station.status}</p>\
+        <div style="margin-top: 15px; text-align: center;">
+             <a href="https://api.restation.site/api/stations/${stationId}/report" 
+                target="_blank" 
+                class="btn-view-report">
+                📄 상세 분석 보고서 보기
+             </a>
+        </div>
 
-        <!-- 활용방안 소개 칸 (나중에 데이터 채워넣을 자리) -->
+        <!-- 활용방안 소개 칸 -->
         <section class="station-detail__section">
           <h3 class="station-detail__section-title">추천 활용방안</h3>
           <p class="station-detail__section-body" id="station-recommendation">
