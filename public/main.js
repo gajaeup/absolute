@@ -200,98 +200,6 @@ export async function initSearch(map, clusterer) {
   };
   const searchBox = document.querySelector('.search-container');
 
-  // ==========================
-  //   지표 API + Chart.js
-  // ==========================
-  async function fetchAndRenderMetrics(station) {
-    const metricsBox = document.getElementById('station-metrics');
-    const loadingText = document.getElementById('metrics-loading-text');
-    if (!metricsBox) return;
-
-    if (loadingText) {
-      loadingText.textContent = '지표를 불러오는 중입니다...';
-    }
-
-    try {
-      console.log('📡 stats 요청 stationId:', station.stationId);
-      const data = await fetchStationStats(station.stationId);
-      console.log('📊 stats data:', data);
-
-      const percentile = data && data.percentile;
-      if (!percentile) {
-        if (loadingText) {
-          loadingText.textContent = '표시할 지표가 없습니다.';
-        }
-        return;
-      }
-
-      renderMetricsChart(percentile);
-    } catch (err) {
-      console.error('지표 불러오기 실패:', err);
-      if (loadingText) {
-        loadingText.textContent = '지표를 불러오지 못했습니다.';
-      }
-    }
-  }
-
-  function renderMetricsChart(percentile) {
-    const box = document.getElementById('station-metrics');
-    if (!box) return;
-
-    // 사용할 지표만 골라서 쓰기
-    const labels = ['교통량', '인구', '관광', '상권 밀도'];
-    const values = [
-      percentile.traffic ?? 0,
-      percentile.population ?? 0,
-      percentile.tourism ?? 0,
-      percentile.commercial_density ?? 0,
-    ];
-
-    // 전부 0 또는 undefined면 "없음" 처리
-    if (values.every((v) => v == null || v === 0)) {
-      box.innerHTML =
-        '<p class="station-detail__section-body is-muted">표시할 지표가 없습니다.</p>';
-      return;
-    }
-
-    // 캔버스 다시 넣기
-    box.innerHTML = '<canvas id="metrics-chart"></canvas>';
-
-    const canvas = document.getElementById('metrics-chart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    new Chart(ctx, {
-      type: 'radar', // 막대그래프 쓰고 싶으면 'bar'
-      data: {
-        labels,
-        datasets: [
-          {
-            label: '지표 백분위(%)',
-            data: values,
-            fill: true,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          r: {
-            suggestedMin: 0,
-            suggestedMax: 100,
-            ticks: { stepSize: 20 },
-          },
-        },
-        plugins: {
-          legend: { display: false },
-        },
-      },
-    });
-
-    canvas.style.height = '180px';
-  }
-
   // 유틸
   const isOpen = (p) => p && p.classList.contains('is-open');
 
@@ -405,9 +313,13 @@ export async function initSearch(map, clusterer) {
     )}`;
     console.log('📌 추천 요청 ID:', stationId);
 
-    // 2) 추천 API 호출
-    const recData = await fetchRecommendation(stationId);
+    // 2) 추천 + 지표 API 동시에 호출
+    const [recData, stats] = await Promise.all([
+      fetchRecommendation(stationId),
+      fetchStationStatics(stationId),
+    ]);
     console.log('📌 추천 결과:', recData);
+    console.log('📊 stats 결과:', stats);
 
     const body = panel.querySelector('.side-panel__body');
     if (body) {
@@ -462,8 +374,8 @@ export async function initSearch(map, clusterer) {
     `;
     }
 
-    // 🔥 여기서 API 호출 + 그래프 그리기
-    fetchAndRenderMetrics(station);
+    // 🧩 stats로 차트 그리기
+    renderMetricsChart(stats);
 
     // 📋 목록 패널 열고, 검색창 오른쪽으로 밀기 + 버튼 active 처리
     openPanel(panel);
@@ -483,6 +395,86 @@ export async function initSearch(map, clusterer) {
       else
         container.innerHTML =
           "<p style='padding:25px;text-align:center'>로드뷰 없음</p>";
+    });
+  }
+
+  // 📊 지표 차트 렌더링
+  let metricsChartInstance = null;
+
+  function renderMetricsChart(stats) {
+    const loadingText = document.getElementById('metrics-loading-text');
+    const canvas = document.getElementById('metrics-chart');
+
+    if (!canvas) return;
+
+    if (!stats || !stats.percentile) {
+      if (loadingText) {
+        loadingText.textContent = '지표를 불러오지 못했습니다.';
+      }
+      return;
+    }
+
+    if (loadingText) {
+      loadingText.textContent = '';
+    }
+
+    const ctx = canvas.getContext('2d');
+
+    // 기존 차트 있으면 파괴
+    if (metricsChartInstance) {
+      metricsChartInstance.destroy();
+      metricsChartInstance = null;
+    }
+
+    const p = stats.percentile;
+    // stats응답.txt 기준 key들 사용 :contentReference[oaicite:8]{index=8}
+    const labels = [
+      '교통량',
+      '관광지수',
+      '인구',
+      '상권밀집도',
+      '지적수(300m)',
+      '지적수(500m)',
+    ];
+
+    const data = [
+      p.traffic,
+      p.tourism,
+      p.population,
+      p.commercial_density,
+      p.parcel_300m,
+      p.parcel_500m,
+    ];
+
+    metricsChartInstance = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: '권역 내 백분위(0~100)',
+            data,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: {
+            min: 0,
+            max: 100,
+            ticks: {
+              stepSize: 20,
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: true,
+          },
+        },
+      },
     });
   }
 })();

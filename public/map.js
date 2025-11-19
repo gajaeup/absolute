@@ -40,14 +40,6 @@ export function drawMarkers(map, clusterer, stations) {
     const addr = station['정제주소'] || station['주소'] || '주소정보 없음';
     const status = station['상태'] || '정보 없음';
 
-    //필드 이름 조정 필요
-    const stationId =
-      station.id ??
-      station.station_id ??
-      station['id'] ??
-      station['station_id'] ??
-      null;
-
     if (isNaN(lat) || isNaN(lng)) return; // 좌표 없으면 스킵
 
     // ✅ 마커 이미지
