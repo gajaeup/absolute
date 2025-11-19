@@ -208,29 +208,21 @@ export async function initSearch(map, clusterer) {
     const loadingText = document.getElementById('metrics-loading-text');
 
     if (!metricsBox) return;
-    if (loadingText) {
-      loadingText.textContent = '지표를 불러오는 중입니다...';
-    }
-
     try {
-      // 🔗 station.stationId는 우리가 map.js에서 넣어준 값
       const data = await fetchStationStatics(station.stationId);
+      console.log('📊 statics data:', data);
 
-      // 예시 응답 가정:
-      // {
-      //   traffic: 0.82,
-      //   population: 0.64,
-      //   tourism: 0.3,
-      //   commerce: 0.75,
-      //   recommendation: "○○동은 유동인구와 상권지수가 높아 카페형 복합공간이 적합합니다."
-      // }
+      // 지표는 percentile 안에 들어있음
+      const percentile = data && data.percentile;
 
-      if (data.recommendation) {
-        const recEl = document.getElementById('station-recommendation');
-        if (recEl) recEl.textContent = data.recommendation;
+      if (!percentile) {
+        if (loadingText) {
+          loadingText.textContent = '표시할 지표가 없습니다.';
+        }
+        return;
       }
 
-      renderMetricsChart(data);
+      renderMetricsChart(percentile);
     } catch (err) {
       console.error('지표 불러오기 실패:', err);
       if (loadingText) {
@@ -239,40 +231,27 @@ export async function initSearch(map, clusterer) {
     }
   }
 
-  function renderMetricsChart(metrics) {
+  function renderMetricsChart(percentile) {
     const box = document.getElementById('station-metrics');
     if (!box) return;
 
-    // 추천 문구 같은 건 제외하고, 숫자인 값만 골라내기
-    const entries = Object.entries(metrics).filter(([key, value]) => {
-      if (key === 'recommendation') return false;
-      if (key === 'station_id' || key === 'id') return false;
-      return typeof value === 'number' && !Number.isNaN(value);
-    });
+    // 사용할 지표만 골라서 쓰기
+    const labels = ['교통량', '인구', '관광', '상권 밀도'];
+    const values = [
+      percentile.traffic ?? 0,
+      percentile.population ?? 0,
+      percentile.tourism ?? 0,
+      percentile.commercial_density ?? 0,
+    ];
 
-    if (!entries.length) {
+    // 전부 0 또는 undefined면 "없음" 처리
+    if (values.every((v) => v == null || v === 0)) {
       box.innerHTML =
         '<p class="station-detail__section-body is-muted">표시할 지표가 없습니다.</p>';
       return;
     }
 
-    // 키 → 한글 라벨 맵핑 (없으면 그냥 원래 키 보여주기)
-    const keyLabelMap = {
-      traffic: '교통량',
-      traffic_index: '교통량',
-      population: '인구',
-      population_index: '인구',
-      tourism: '관광',
-      tourism_index: '관광',
-      commerce: '상권',
-      commercial: '상권',
-      commercial_index: '상권',
-    };
-
-    const labels = entries.map(([key]) => keyLabelMap[key] || key);
-    const values = entries.map(([, value]) => value);
-
-    // 캔버스만 남기기
+    // 캔버스 다시 넣기
     box.innerHTML = '<canvas id="metrics-chart"></canvas>';
 
     const canvas = document.getElementById('metrics-chart');
@@ -280,12 +259,12 @@ export async function initSearch(map, clusterer) {
     const ctx = canvas.getContext('2d');
 
     new Chart(ctx, {
-      type: 'radar', // 필요하면 'bar' 로 바꿔도 됨
+      type: 'radar', // 막대그래프 쓰고 싶으면 'bar'
       data: {
         labels,
         datasets: [
           {
-            label: '지표 점수',
+            label: '지표 백분위(%)',
             data: values,
             fill: true,
           },
@@ -297,8 +276,8 @@ export async function initSearch(map, clusterer) {
         scales: {
           r: {
             suggestedMin: 0,
-            suggestedMax: 1,
-            ticks: { stepSize: 0.2 },
+            suggestedMax: 100,
+            ticks: { stepSize: 20 },
           },
         },
         plugins: {
