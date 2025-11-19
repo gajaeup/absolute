@@ -260,7 +260,7 @@ function renderStationList(items,map) {
   listEl.innerHTML = "";
 
   if (!items || items.length === 0) {
-    listEl.innerHTML = `<div class="empty-msg">해당 지역에 주유소가 없습니다.</div>`;
+    listEl.innerHTML = `<div class="empty-msg">해당 지역에 폐주유소가 없습니다.</div>`;
     return;
   }
 

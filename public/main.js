@@ -1,5 +1,5 @@
 // public/js/main.js
-import { initMap, drawMarkers, highlightMarker } from './map.js';
+import { initMap, drawMarkers, highlightMarker, resetHighlight, setMapInstance } from './map.js';
 import { fetchStationsInMap, searchStations, fetchRecommendation } from './api.js';
 import {
   switchSearchMode,
@@ -7,6 +7,7 @@ import {
   loadSidoData,
   initRegionSearch,
 } from './search.js';
+
 
 async function loadKakaoSDK() {
   let apiKey;
@@ -41,7 +42,7 @@ async function loadKakaoSDK() {
 window.addEventListener('DOMContentLoaded', async () => {
   await loadKakaoSDK();
   const map = initMap();
-  
+  setMapInstance(map);
   initSearchTabs();
 
   // 1️⃣ 지도 초기화
@@ -52,6 +53,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     minClusterSize: 10,
     disableClickZoom: false,
   });
+  window.clustererRef = clusterer;
   const geoSources = {
     sido: '/public/ctprvn_wgs84.json',
     sig: '/public/sig_wgs84_simplified.json',
@@ -142,6 +144,20 @@ export async function initSearch(map, clusterer) {
           map.setLevel(4);
           map.panTo(pos);
 
+          const allMarkers = clusterer.getMarkers();
+          const target = allMarkers.find(m => {
+            const p = m.getPosition();
+            return (
+              Math.abs(p.getLat() - station.lat) < 0.00001 &&
+              Math.abs(p.getLng() - station.lng) < 0.00001
+            );
+          });
+
+          // 3️⃣ 찾았으면 마커 확대
+          if (target) {
+            highlightMarker(clusterer, target);
+          }
+
           list.innerHTML = '';
           list.classList.remove('open');
           document.getElementById('search-input').value = station.name;
@@ -154,6 +170,9 @@ export async function initSearch(map, clusterer) {
       alert('검색 중 오류가 발생했습니다.');
     }
   }
+  /*kakao.maps.event.addListener(map, 'click', () => {
+      resetHighlight(clusterer);
+  });*/
 }
 
 (function () {
@@ -168,6 +187,7 @@ export async function initSearch(map, clusterer) {
   const closeBtns = {
     list: document.getElementById('list-panel-close'),
     guide: document.getElementById('guide-panel-close'),
+
   };
   const searchBox = document.querySelector('.search-container');
 
@@ -184,6 +204,15 @@ export async function initSearch(map, clusterer) {
     else searchBox.classList.remove('pushed-by-list');
   }
 
+  function closeRoadview() {
+    const container = document.getElementById('floating-roadview');
+    if (container) {
+      container.classList.add('hidden');
+      container.innerHTML = ''; // 메모리 정리를 위해 내용 비우기
+    }
+  }
+
+
   function openPanel(panel) {
     if (!panel) return;
     closeAllPanels(); // ✅ 다른 패널은 자동으로 닫힘
@@ -197,10 +226,13 @@ export async function initSearch(map, clusterer) {
     if (!panel) return;
     panel.classList.remove('is-open');
     panel.setAttribute('aria-hidden', 'true');
+    if (panel === panels.list) {
+      closeRoadview();
+    }
     if (!anyOpen()) pushSearch(false); // 둘 다 닫히면 검색창 원위치
     syncActiveState(); // 🔹 버튼 active 상태 반영
   }
-
+  
   function closeAllPanels() {
     Object.values(panels).forEach((p) => {
       if (p && isOpen(p)) {
@@ -208,6 +240,7 @@ export async function initSearch(map, clusterer) {
         p.setAttribute('aria-hidden', 'true');
       }
     });
+    closeRoadview();
     pushSearch(false);
     syncActiveState(); // 🔹 둘 다 닫혔으니 active 제거
   }
@@ -243,12 +276,28 @@ export async function initSearch(map, clusterer) {
   // ESC로 닫기
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeAllPanels();
+
   });
 
   //👇수정사항
   // 🔔 지도 카드에서 주유소를 클릭했을 때 목록 패널 열기
   window.addEventListener('stationSelected', async (e) => {
     const station = e.detail;
+    
+    const clusterer = window.clustererRef
+    if (clusterer) {
+      const allMarkers = clusterer.getMarkers();
+    const target = allMarkers.find(m => {
+      const p = m.getPosition();
+      return (
+        Math.abs(p.getLat() - station.lat) < 0.000001 &&
+        Math.abs(p.getLng() - station.lng) < 0.000001 
+      );
+    });
+    if (target) {
+      highlightMarker(clusterer, target);
+      }
+    }
     const panel = panels.list;
     if (!panel) return;
 

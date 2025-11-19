@@ -1,5 +1,9 @@
 // public/js/map.js
-
+let lastHighlightedMarker = null;
+let mapInstance = null;
+export function setMapInstance(map) {
+  mapInstance = map;
+}
 export function initMap() {
   const map = new kakao.maps.Map(document.getElementById('map'), {
     center: new kakao.maps.LatLng(36.5, 127.8),
@@ -48,7 +52,6 @@ export function drawMarkers(map, clusterer, stations) {
     const marker = new kakao.maps.Marker({
       position: new kakao.maps.LatLng(lat, lng),
       image: markerImage,
-      map: map,
     });
     const color = /폐업|휴업/.test(status) ? '#ff5a5f' : '#ffb74d';
 
@@ -107,7 +110,6 @@ export function drawMarkers(map, clusterer, stations) {
       yAnchor: 1.5,
     });
 
-
     // ========== 마우스 오버 ==========
     kakao.maps.event.addListener(marker, 'mouseover', () => {
       if (closeTimer) clearTimeout(closeTimer);
@@ -116,6 +118,7 @@ export function drawMarkers(map, clusterer, stations) {
       overlay.setMap(map);
       openOverlay = overlay;
     });
+
 
     // ========== 마우스 아웃 ==========
     kakao.maps.event.addListener(marker, 'mouseout', () => {
@@ -135,26 +138,45 @@ export function drawMarkers(map, clusterer, stations) {
 
 }
 export function highlightMarker(clusterer, targetMarker) {
+  resetHighlight(clusterer);  
+  if (!targetMarker) return;
   const imageSrc =
     "https://map.pstatic.net/resource/api/v2/image/maps/selected-marker/229155@1x.png?version=19&mapping=marker-167";
-
-  const normalSize = new kakao.maps.Size(20, 30);
-  const largeSize = new kakao.maps.Size(30, 45);
-
-  const normalImage = new kakao.maps.MarkerImage(imageSrc, normalSize, {
-    offset: new kakao.maps.Point(15, 40),
-  });
+  const largeSize = new kakao.maps.Size(35, 45); // 확 키운 버전
 
   const largeImage = new kakao.maps.MarkerImage(imageSrc, largeSize, {
-    offset: new kakao.maps.Point(15, 40),
+    offset: new kakao.maps.Point(20, 55),
+  });
+  if (!mapInstance) {
+    console.error("mapInstance가 설정되지 않았습니다.");
+    return;
+  }
+  const position = targetMarker.getPosition();
+  const bigMarker = new kakao.maps.Marker({
+    position: position,
+    image: largeImage,
+    zIndex: 999,    // ★ 다른 마커들보다 무조건 위에 보이도록 설정
+    map: mapInstance // 지도에 표시
+  });
+  kakao.maps.event.addListener(bigMarker, 'mouseover', () => {
+    kakao.maps.event.trigger(targetMarker, 'mouseover');
   });
 
-  const allMarkers = clusterer.getMarkers();
-  allMarkers.forEach(m => m.setImage(normalImage));
+  // 2. 큰 마커에서 마우스가 나가면 -> 원본 마커의 'mouseout'을 강제 실행
+  kakao.maps.event.addListener(bigMarker, 'mouseout', () => {
+    kakao.maps.event.trigger(targetMarker, 'mouseout');
+  });
 
-  // 2️⃣ 내가 클릭한 마커만 크게 적용
-  targetMarker.setImage(largeImage);
-  targetMarker.setZIndex(99999);
+  // 4️⃣ 전역 변수에 저장 (나중에 지우기 위해)
+  lastHighlightedMarker = bigMarker;
+  mapInstance.panTo(position);
 }
 
+export function resetHighlight(clusterer) {
+  if (!lastHighlightedMarker) return;
+
+  // 강조된 마커 삭제
+  lastHighlightedMarker.setMap(null);
+  lastHighlightedMarker = null;
+}
 
