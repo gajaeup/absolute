@@ -1,6 +1,6 @@
 // public/js/main.js
 import { initMap, drawMarkers, highlightMarkers } from './map.js';
-import { fetchStationsInMap, searchStations } from './api.js';
+import { fetchStationsInMap, searchStations, fetchRecommendation } from './api.js';
 import {
   switchSearchMode,
   initSearchTabs,
@@ -40,6 +40,7 @@ async function loadKakaoSDK() {
 
 window.addEventListener('DOMContentLoaded', async () => {
   await loadKakaoSDK();
+  console.log("🔥 main.js에서 initMap() 호출");
   const map = initMap();
   
   initSearchTabs();
@@ -247,10 +248,17 @@ export async function initSearch(map, clusterer) {
 
   //👇수정사항
   // 🔔 지도 카드에서 주유소를 클릭했을 때 목록 패널 열기
-  window.addEventListener('stationSelected', (e) => {
+  window.addEventListener('stationSelected', async (e) => {
     const station = e.detail;
     const panel = panels.list;
     if (!panel) return;
+
+  const stationId = `${Math.round(station.lat * 1_000_000)}_${Math.round(station.lng * 1_000_000)}`;
+  console.log("📌 추천 요청 ID:", stationId);
+
+  // 2) 추천 API 호출
+  const recData = await fetchRecommendation(stationId);
+  console.log("📌 추천 결과:", recData);
 
     const body = panel.querySelector('.side-panel__body');
     if (body) {
@@ -272,7 +280,7 @@ export async function initSearch(map, clusterer) {
         <section class="station-detail__section">
           <h3 class="station-detail__section-title">추천 활용방안</h3>
           <p class="station-detail__section-body" id="station-recommendation">
-            추후 분석 결과에 따른 추천 활용방안이 이 영역에 표시됩니다.
+            ${recData?.suggestion ?? "추천 데이터가 없습니다."}
           </p>
         </section>
 
