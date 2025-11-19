@@ -10,7 +10,6 @@ import {
   fetchStationsInMap,
   searchStations,
   fetchRecommendation,
-  fetchStationStatics,
 } from './api.js';
 import {
   switchSearchMode,
