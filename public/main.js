@@ -313,13 +313,9 @@ export async function initSearch(map, clusterer) {
     )}`;
     console.log('📌 추천 요청 ID:', stationId);
 
-    // 2) 추천 + 지표 API 동시에 호출
-    const [recData, stats] = await Promise.all([
-      fetchRecommendation(stationId),
-      fetchStationStatics(stationId),
-    ]);
+    // 2) 추천 API 호출
+    const recData = await fetchRecommendation(stationId);
     console.log('📌 추천 결과:', recData);
-    console.log('📊 stats 결과:', stats);
 
     const body = panel.querySelector('.side-panel__body');
     if (body) {
@@ -373,9 +369,6 @@ export async function initSearch(map, clusterer) {
     </article>
     `;
     }
-
-    // 🧩 stats로 차트 그리기
-    renderMetricsChart(stats);
 
     // 📋 목록 패널 열고, 검색창 오른쪽으로 밀기 + 버튼 active 처리
     openPanel(panel);

@@ -68,21 +68,3 @@ export async function fetchMLRecommendation(stationId) {
   );
   return res.ok ? res.json() : {};
 }
-
-// 개별 주유소 지표(stats)
-export async function fetchStationStatics(stationId) {
-  const url = `${API_BASE}/api/stations/${stationId}/stats`;
-  console.log('📊 Fetch stats:', url);
-
-  const res = await fetch(url);
-  if (!res.ok) {
-    const msg = await res.text();
-    throw new Error(
-      `❌ GET /stations/${stationId}/stats failed (${res.status}): ${msg}`
-    );
-  }
-
-  const data = await res.json();
-  console.log('✅ stats 응답:', data);
-  return data;
-}
