@@ -336,7 +336,8 @@ body {
 
 /*  주소 */
 .info-addr {
-  word-break: break-all;
+  white-space: normal;
+  word-break: keep-all;
   margin-bottom: 4px;
   line-height: 1.3;
 }
