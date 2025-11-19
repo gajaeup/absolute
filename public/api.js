@@ -73,7 +73,7 @@ export async function fetchMLRecommendation(stationId) {
 export async function fetchStationStatics(stationId) {
   if (!stationId) return {};
 
-  const res = await fetch(`${API_BASE}/api/stations/${stationId}/statics`);
+  const url = `${API_BASE}/api/stations/${stationId}/stats`;
 
   if (!res.ok) {
     console.error('📉 statics API error:', res.status);
