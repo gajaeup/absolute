@@ -68,15 +68,3 @@ export async function fetchMLRecommendation(stationId) {
   );
   return res.ok ? res.json() : {};
 }
-
-//그래프
-export async function fetchStationStats(stationId) {
-  if (!stationId) return {};
-
-  const res = await fetch(`${API_BASE}/stations/${stationId}/stats`);
-  if (!res.ok) {
-    console.error('stats API error', res.status);
-    return {};
-  }
-  return res.json();
-}

@@ -10,7 +10,6 @@ import {
   fetchStationsInMap,
   searchStations,
   fetchRecommendation,
-  fetchStationStats,
 } from './api.js';
 import {
   switchSearchMode,
@@ -286,82 +285,6 @@ export async function initSearch(map, clusterer) {
     if (e.key === 'Escape') closeAllPanels();
   });
 
-  //차트
-  async function fetchAndRenderMetrics(station) {
-    const metricsBox = document.getElementById('station-metrics');
-    const loadingText = document.getElementById('metrics-loading-text');
-    if (!metricsBox) return;
-
-    if (loadingText) {
-      loadingText.textContent = '지표를 불러오는 중입니다...';
-    }
-
-    try {
-      console.log('📡 stats 요청 stationId:', station.stationId);
-      const data = await fetchStationStats(station.stationId); // ← api.js 함수
-
-      console.log('📊 stats data:', data);
-      const percentile = data && data.percentile;
-
-      if (!percentile) {
-        if (loadingText) {
-          loadingText.textContent = '표시할 지표가 없습니다.';
-        }
-        return;
-      }
-
-      renderMetricsBars(percentile);
-    } catch (err) {
-      console.error('지표 불러오기 실패:', err);
-      if (loadingText) {
-        loadingText.textContent = '지표를 불러오지 못했습니다.';
-      }
-    }
-  }
-
-  //차트
-  function renderMetricsBars(percentile) {
-    const box = document.getElementById('station-metrics');
-    if (!box) return;
-
-    // 사용할 지표만 선택 (percentile 기준, 0~100)
-    const config = [
-      { key: 'traffic', label: '교통량' },
-      { key: 'population', label: '인구' },
-      { key: 'tourism', label: '관광' },
-      { key: 'commercial_density', label: '상권 밀도' },
-    ];
-
-    const rowsHtml = config
-      .map(({ key, label }) => {
-        const value = percentile?.[key];
-        if (value == null) return '';
-
-        // 0~100 사이로 클램프
-        const pct = Math.max(0, Math.min(100, Number(value)));
-
-        return `
-        <div class="metric-row">
-          <span class="metric-label">${label}</span>
-          <div class="metric-bar">
-            <div class="metric-bar-fill" style="width: ${pct}%;"></div>
-          </div>
-          <span class="metric-value">${pct.toFixed(0)}점</span>
-        </div>
-      `;
-      })
-      .filter(Boolean)
-      .join('');
-
-    if (!rowsHtml) {
-      box.innerHTML =
-        '<p class="station-detail__section-body is-muted">표시할 지표가 없습니다.</p>';
-      return;
-    }
-
-    box.innerHTML = rowsHtml;
-  }
-
   //👇수정사항
   // 🔔 지도 카드에서 주유소를 클릭했을 때 목록 패널 열기
   window.addEventListener('stationSelected', async (e) => {
@@ -449,8 +372,6 @@ export async function initSearch(map, clusterer) {
     // 📋 목록 패널 열고, 검색창 오른쪽으로 밀기 + 버튼 active 처리
     openPanel(panel);
     showRoadview(station.lat, station.lng);
-
-    fetchAndRenderMetrics(station); // ⬅ 지표 데이터 불러와서 막대 그리기
   });
   function showRoadview(lat, lng) {
     const container = document.getElementById('floating-roadview');

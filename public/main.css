@@ -676,39 +676,3 @@ body {
 #map-type-toggle button:hover {
   background: #e4e4e4;
 }
-
-/* ===== 지표 요약 가로 막대 ===== */
-.metric-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-  font-size: 12px;
-}
-
-.metric-label {
-  width: 70px;
-  flex-shrink: 0;
-  color: #333;
-}
-
-.metric-bar {
-  flex: 1;
-  height: 8px;
-  border-radius: 999px;
-  background: #e5e7eb;
-  overflow: hidden;
-}
-
-.metric-bar-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: #0b5674; /* 프로젝트 메인 색 근처로 */
-}
-
-.metric-value {
-  width: 60px;
-  flex-shrink: 0;
-  text-align: right;
-  color: #555;
-}
