@@ -362,6 +362,7 @@ export async function initSearch(map, clusterer) {
         <!-- 지표 그래프 칸 (나중에 차트/지표값 들어갈 자리) -->
         <section class="station-detail__section">
               <h3 class="station-detail__section-title">지표 요약</h3>
+              ${renderMetricsText(stats)}
               <div class="station-detail__metrics" id="station-metrics">
                 <p class="station-detail__section-body is-muted" id="metrics-loading-text">
                   지표를 불러오는 중입니다...
@@ -399,9 +400,74 @@ export async function initSearch(map, clusterer) {
   }
 })();
 
-// ⭐ 통계 차트 함수
+// 🔹 지표 텍스트 렌더링
+function renderMetricsText(stats) {
+  if (!stats || !stats.metrics) return '';
+
+  const labelMap = {
+    traffic: '일교통량(AADT)',
+    tourism: '관광지수(행정동)',
+    population: '인구수(행정동)',
+    commercial_density: '상권지수',
+    parcel_300m: '반경 300m 필지수',
+    parcel_500m: '반경 500m 필지수',
+  };
+
+  const m = stats.metrics;
+
+  const rows = Object.keys(m)
+    .map((key) => {
+      const name = labelMap[key] || key;
+      const rawVal = m[key];
+      let valueStr;
+
+      if (typeof rawVal === 'number') {
+        if (Math.abs(rawVal) < 1) {
+          valueStr = rawVal.toFixed(3);
+        } else if (Math.abs(rawVal) < 1000) {
+          valueStr = rawVal.toLocaleString();
+        } else {
+          valueStr = Math.round(rawVal).toLocaleString();
+        }
+      } else {
+        valueStr = rawVal;
+      }
+
+      return `
+        <div class="metric-row" style="
+          display:flex;
+          justify-content:space-between;
+          padding:4px 8px;
+          margin-bottom:4px;
+          background:#f8f9fa;
+          border-radius:6px;
+          border:1px solid #ececec;
+          font-size:13px;
+        ">
+          <span class="metric-label" style="font-weight:600;color:#333;">
+            ${name}
+          </span>
+          <span class="metric-value" style="color:#555;">
+            ${valueStr}
+          </span>
+        </div>
+      `;
+    })
+    .join('');
+
+  return `
+    <div class="metrics-text-container" style="
+      margin-bottom:10px;
+      display:block;
+    ">
+      ${rows}
+    </div>
+  `;
+}
+
+// ⭐ 통계 차트 함수 (relative 기반, 단위 %)
 function drawStatsChart(stats) {
-  if (!stats) return;
+  if (!stats || !stats.relative) return;
 
   const ctx = document.getElementById('metrics-chart');
   if (!ctx) return;
@@ -409,9 +475,18 @@ function drawStatsChart(stats) {
   const loadingText = document.getElementById('metrics-loading-text');
   if (loadingText) loadingText.remove();
 
-  const labels = Object.keys(stats.metrics);
-  const myValues = Object.values(stats.metrics);
-  const avgValues = labels.map((key) => stats.train_mean[key]);
+  const labelMap = {
+    traffic: '일교통량(AADT)',
+    tourism: '관광지수(행정동)',
+    population: '인구수(행정동)',
+    commercial_density: '상권지수',
+    parcel_300m: '반경 300m 필지수',
+    parcel_500m: '반경 500m 필지수',
+  };
+
+  const keys = Object.keys(stats.relative);
+  const labels = keys.map((k) => labelMap[k] || k);
+  const relValues = keys.map((k) => stats.relative[k]);
 
   if (window.statsChartInstance) {
     window.statsChartInstance.destroy();
@@ -420,24 +495,39 @@ function drawStatsChart(stats) {
   window.statsChartInstance = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: labels,
+      labels,
       datasets: [
         {
-          label: '주유소 값',
-          data: myValues,
-          backgroundColor: 'rgba(255, 159, 64, 0.8)',
-        },
-        {
-          label: '권역 평균',
-          data: avgValues,
-          backgroundColor: 'rgba(54, 162, 235, 0.6)',
+          label: '지역 평균 대비 상대값(%)',
+          data: relValues,
+          backgroundColor: relValues.map((v) =>
+            v >= 0 ? 'rgba(54, 162, 235, 0.75)' : 'rgba(250, 99, 132, 0.75)'
+          ),
+          borderColor: relValues.map((v) =>
+            v >= 0 ? '#2F80ED' : '#EB5757'
+          ),
+          borderWidth: 1.5,
         },
       ],
     },
     options: {
       responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.raw.toFixed(1)} %`,
+          },
+        },
+      },
       scales: {
-        y: { beginAtZero: true },
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: '% (권역 평균 대비 증감률)',
+          },
+        },
       },
     },
   });
