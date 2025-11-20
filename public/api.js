@@ -68,3 +68,10 @@ export async function fetchMLRecommendation(stationId) {
   );
   return res.ok ? res.json() : {};
 }
+
+// 통계 데이터
+export async function fetchStats(stationId) {
+  const res = await fetch(`${API_BASE}/api/stations/${stationId}/stats`);
+  return res.ok ? res.json() : null;
+}
+

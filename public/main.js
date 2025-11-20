@@ -10,6 +10,7 @@ import {
   fetchStationsInMap,
   searchStations,
   fetchRecommendation,
+  fetchStats,   
 } from './api.js';
 import {
   switchSearchMode,
@@ -316,6 +317,10 @@ export async function initSearch(map, clusterer) {
     const recData = await fetchRecommendation(stationId);
     console.log('📌 추천 결과:', recData);
 
+    // ⭐ 3) 통계 API 호출
+    const stats = await fetchStats(stationId);
+    console.log('📊 통계 결과:', stats);
+
     const body = panel.querySelector('.side-panel__body');
     if (body) {
       body.innerHTML = `
@@ -369,6 +374,9 @@ export async function initSearch(map, clusterer) {
     `;
     }
 
+    // ⭐ 통계 차트 렌더링
+    drawStatsChart(stats);
+
     // 📋 목록 패널 열고, 검색창 오른쪽으로 밀기 + 버튼 active 처리
     openPanel(panel);
     showRoadview(station.lat, station.lng);
@@ -390,3 +398,47 @@ export async function initSearch(map, clusterer) {
     });
   }
 })();
+
+// ⭐ 통계 차트 함수
+function drawStatsChart(stats) {
+  if (!stats) return;
+
+  const ctx = document.getElementById('metrics-chart');
+  if (!ctx) return;
+
+  const loadingText = document.getElementById('metrics-loading-text');
+  if (loadingText) loadingText.remove();
+
+  const labels = Object.keys(stats.metrics);
+  const myValues = Object.values(stats.metrics);
+  const avgValues = labels.map((key) => stats.train_mean[key]);
+
+  if (window.statsChartInstance) {
+    window.statsChartInstance.destroy();
+  }
+
+  window.statsChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: '주유소 값',
+          data: myValues,
+          backgroundColor: 'rgba(255, 159, 64, 0.8)',
+        },
+        {
+          label: '권역 평균',
+          data: avgValues,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)',
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true },
+      },
+    },
+  });
+}
