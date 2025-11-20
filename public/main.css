@@ -146,6 +146,21 @@ body {
   color: #333; /* 글자색은 기본 그대로 */
 }
 
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1; /* 본문이 남는 공간을 채우게 */
+}
+
+
 /* Footer 스타일 */
 .site-footer {
   background-color: #111;
