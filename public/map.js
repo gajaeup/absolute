@@ -1,5 +1,6 @@
 // public/js/map.js
 let lastHighlightedMarker = null;
+let lastOriginalMarker = null;
 let mapInstance = null;
 export function setMapInstance(map) {
   mapInstance = map;
@@ -9,20 +10,20 @@ export function initMap() {
     center: new kakao.maps.LatLng(36.5, 127.8),
     level: 12,
   });
-  const btnRoadmap = document.getElementById("btn-roadmap");
-  const btnHybrid = document.getElementById("btn-hybrid");
+  const btnRoadmap = document.getElementById('btn-roadmap');
+  const btnHybrid = document.getElementById('btn-hybrid');
 
   btnRoadmap.onclick = () => {
     map.setMapTypeId(kakao.maps.MapTypeId.ROADMAP);
-    btnRoadmap.classList.add("active");
-    btnHybrid.classList.remove("active");
+    btnRoadmap.classList.add('active');
+    btnHybrid.classList.remove('active');
   };
 
   // 항공 지도
   btnHybrid.onclick = () => {
     map.setMapTypeId(kakao.maps.MapTypeId.HYBRID);
-    btnHybrid.classList.add("active");
-    btnRoadmap.classList.remove("active");
+    btnHybrid.classList.add('active');
+    btnRoadmap.classList.remove('active');
   };
 
   return map;
@@ -105,6 +106,8 @@ export function drawMarkers(map, clusterer, stations) {
       }, 200);
     });
 
+   
+
     // ✅ 카드 클릭 시 stationSelected 이벤트 발송
     iwEl.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -114,10 +117,7 @@ export function drawMarkers(map, clusterer, stations) {
           detail: { name, addr, status, lat, lng, imgUrl },
         })
       );
-      if (openOverlay) openOverlay.setMap(null);
-      openOverlay = null;
     });
-
 
 
     // ========== 마우스 오버 ==========
@@ -131,25 +131,32 @@ export function drawMarkers(map, clusterer, stations) {
       overlay.setMap(map);
       openOverlay = overlay;
     });
-
+    let lastClickTime = 0;
     kakao.maps.event.addListener(marker, 'click', () => {
+      const currentTime = new Date().getTime();
+      const timeDiff = currentTime - lastClickTime;
       if (openOverlay && openOverlay !== overlay) {
         openOverlay.setMap(null);
       }
-  
       overlay.setMap(map);
       openOverlay = overlay;
+
+      if (timeDiff < 500) {
+        // 🔥 여기서 사이드 패널 여는 이벤트 발송
+        window.dispatchEvent(
+          new CustomEvent('stationSelected', {
+            detail: { name, addr, status, lat, lng, imgUrl },
+          })
+        );
+      }
+      lastClickTime = currentTime;
     });
-
-
-    kakao.maps.event.addListener(marker, 'dblclick', () => {
-      window.dispatchEvent(
-        new CustomEvent('stationSelected', {
-          detail: { name, addr, status, lat, lng, imgUrl },
-        })
-      );
+    kakao.maps.event.addListener(map, 'click', () => {
+      if (lastOriginalMarker) {
+        lastOriginalMarker.setVisible(true);
+        lastOriginalMarker = null;
+      }
     });
-
 
     // ========== 마우스 아웃 ==========
     kakao.maps.event.addListener(marker, 'mouseout', () => {
@@ -167,28 +174,30 @@ export function drawMarkers(map, clusterer, stations) {
   });
 
   clusterer.addMarkers(markers);
-
 }
 export function highlightMarker(clusterer, targetMarker) {
-  resetHighlight(clusterer);  
+  resetHighlight(clusterer);
   if (!targetMarker) return;
+  targetMarker.setVisible(false); 
+  lastOriginalMarker = targetMarker;
+
   const imageSrc =
-    "https://map.pstatic.net/resource/api/v2/image/maps/selected-marker/229155@1x.png?version=19&mapping=marker-167";
+    'https://map.pstatic.net/resource/api/v2/image/maps/selected-marker/229155@1x.png?version=19&mapping=marker-167';
   const largeSize = new kakao.maps.Size(35, 45); // 확 키운 버전
 
   const largeImage = new kakao.maps.MarkerImage(imageSrc, largeSize, {
     offset: new kakao.maps.Point(17, 45),
   });
   if (!mapInstance) {
-    console.error("mapInstance가 설정되지 않았습니다.");
+    console.error('mapInstance가 설정되지 않았습니다.');
     return;
   }
   const position = targetMarker.getPosition();
   const bigMarker = new kakao.maps.Marker({
     position: position,
     image: largeImage,
-    zIndex: 999,    // ★ 다른 마커들보다 무조건 위에 보이도록 설정
-    map: mapInstance // 지도에 표시
+    zIndex: 999, // ★ 다른 마커들보다 무조건 위에 보이도록 설정
+    map: mapInstance, // 지도에 표시
   });
   kakao.maps.event.addListener(bigMarker, 'mouseover', () => {
     kakao.maps.event.trigger(targetMarker, 'mouseover');
@@ -206,9 +215,11 @@ export function highlightMarker(clusterer, targetMarker) {
 
 export function resetHighlight(clusterer) {
   if (!lastHighlightedMarker) return;
-
   // 강조된 마커 삭제
   lastHighlightedMarker.setMap(null);
   lastHighlightedMarker = null;
+  if (lastOriginalMarker) {
+    lastOriginalMarker.setVisible(true);
+    lastOriginalMarker = null;
+  }
 }
-

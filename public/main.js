@@ -1,13 +1,23 @@
 // public/js/main.js
-import { initMap, drawMarkers, highlightMarker, resetHighlight, setMapInstance } from './map.js';
-import { fetchStationsInMap, searchStations, fetchRecommendation } from './api.js';
+import {
+  initMap,
+  drawMarkers,
+  highlightMarker,
+  resetHighlight,
+  setMapInstance,
+} from './map.js';
+import {
+  fetchStationsInMap,
+  searchStations,
+  fetchRecommendation,
+  fetchStats,   
+} from './api.js';
 import {
   switchSearchMode,
   initSearchTabs,
   loadSidoData,
   initRegionSearch,
 } from './search.js';
-
 
 async function loadKakaoSDK() {
   let apiKey;
@@ -145,7 +155,7 @@ export async function initSearch(map, clusterer) {
           map.panTo(pos);
 
           const allMarkers = clusterer.getMarkers();
-          const target = allMarkers.find(m => {
+          const target = allMarkers.find((m) => {
             const p = m.getPosition();
             return (
               Math.abs(p.getLat() - station.lat) < 0.00001 &&
@@ -173,6 +183,7 @@ export async function initSearch(map, clusterer) {
   /*kakao.maps.event.addListener(map, 'click', () => {
       resetHighlight(clusterer);
   });*/
+
 }
 
 (function () {
@@ -187,7 +198,6 @@ export async function initSearch(map, clusterer) {
   const closeBtns = {
     list: document.getElementById('list-panel-close'),
     guide: document.getElementById('guide-panel-close'),
-
   };
   const searchBox = document.querySelector('.search-container');
 
@@ -212,7 +222,6 @@ export async function initSearch(map, clusterer) {
     }
   }
 
-
   function openPanel(panel) {
     if (!panel) return;
     closeAllPanels(); // ✅ 다른 패널은 자동으로 닫힘
@@ -232,7 +241,7 @@ export async function initSearch(map, clusterer) {
     if (!anyOpen()) pushSearch(false); // 둘 다 닫히면 검색창 원위치
     syncActiveState(); // 🔹 버튼 active 상태 반영
   }
-  
+
   function closeAllPanels() {
     Object.values(panels).forEach((p) => {
       if (p && isOpen(p)) {
@@ -276,37 +285,42 @@ export async function initSearch(map, clusterer) {
   // ESC로 닫기
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeAllPanels();
-
   });
 
   //👇수정사항
   // 🔔 지도 카드에서 주유소를 클릭했을 때 목록 패널 열기
   window.addEventListener('stationSelected', async (e) => {
     const station = e.detail;
-    
-    const clusterer = window.clustererRef
+
+    const clusterer = window.clustererRef;
     if (clusterer) {
       const allMarkers = clusterer.getMarkers();
-    const target = allMarkers.find(m => {
-      const p = m.getPosition();
-      return (
-        Math.abs(p.getLat() - station.lat) < 0.000001 &&
-        Math.abs(p.getLng() - station.lng) < 0.000001 
-      );
-    });
-    if (target) {
-      highlightMarker(clusterer, target);
+      const target = allMarkers.find((m) => {
+        const p = m.getPosition();
+        return (
+          Math.abs(p.getLat() - station.lat) < 0.000001 &&
+          Math.abs(p.getLng() - station.lng) < 0.000001
+        );
+      });
+      if (target) {
+        highlightMarker(clusterer, target);
       }
     }
     const panel = panels.list;
     if (!panel) return;
 
-  const stationId = `${Math.round(station.lat * 1_000_000)}_${Math.round(station.lng * 1_000_000)}`;
-  console.log("📌 추천 요청 ID:", stationId);
+    const stationId = `${Math.round(station.lat * 1_000_000)}_${Math.round(
+      station.lng * 1_000_000
+    )}`;
+    console.log('📌 추천 요청 ID:', stationId);
 
-  // 2) 추천 API 호출
-  const recData = await fetchRecommendation(stationId);
-  console.log("📌 추천 결과:", recData);
+    // 2) 추천 API 호출
+    const recData = await fetchRecommendation(stationId);
+    console.log('📌 추천 결과:', recData);
+
+    // ⭐ 3) 통계 API 호출
+    const stats = await fetchStats(stationId);
+    console.log('📊 통계 결과:', stats);
 
     const body = panel.querySelector('.side-panel__body');
     if (body) {
@@ -337,47 +351,185 @@ export async function initSearch(map, clusterer) {
           <p class="station-detail__section-body" id="station-recommendation">
             ${
               recData
-        ? `
+                ? `
                 ① ${recData.recommend1}<br>
                 ② ${recData.recommend2}<br>
                 ③ ${recData.recommend3}`
-                : "추천 데이터가 없습니다."
+                : '추천 데이터가 없습니다.'
             }
           </p>
         </section>
 
         <!-- 지표 그래프 칸 (나중에 차트/지표값 들어갈 자리) -->
         <section class="station-detail__section">
-          <h3 class="station-detail__section-title">지표 요약</h3>
-          <div class="station-detail__metrics" id="station-metrics">
-            <!-- 나중에 그래프/지표 컴포넌트 렌더링 예정 -->
-            <p class="station-detail__section-body is-muted">
-              교통량, 인구, 상권 등 지표를 시각화한 그래프가 이 영역에 표시됩니다.
-            </p>
-          </div>
-        </section>
+              <h3 class="station-detail__section-title">지표 요약</h3>
+              ${renderMetricsText(stats)}
+              <div class="station-detail__metrics" id="station-metrics">
+                <p class="station-detail__section-body is-muted" id="metrics-loading-text">
+                  지표를 불러오는 중입니다...
+                </p>
+                <canvas id="metrics-chart"></canvas>
+              </div>
+            </section>
       </div>
     </article>
     `;
     }
+
+    // ⭐ 통계 차트 렌더링
+    drawStatsChart(stats);
 
     // 📋 목록 패널 열고, 검색창 오른쪽으로 밀기 + 버튼 active 처리
     openPanel(panel);
     showRoadview(station.lat, station.lng);
   });
   function showRoadview(lat, lng) {
-  const container = document.getElementById('floating-roadview');
-  container.classList.remove('hidden');
-  container.innerHTML = '';
+    const container = document.getElementById('floating-roadview');
+    container.classList.remove('hidden');
+    container.innerHTML = '';
 
-  const pos = new kakao.maps.LatLng(lat, lng);
-  const rv = new kakao.maps.Roadview(container);
-  const rvc = new kakao.maps.RoadviewClient();
+    const pos = new kakao.maps.LatLng(lat, lng);
+    const rv = new kakao.maps.Roadview(container);
+    const rvc = new kakao.maps.RoadviewClient();
 
-  rvc.getNearestPanoId(pos, 50, (panoId) => {
-    if (panoId) rv.setPanoId(panoId, pos);
-    else container.innerHTML =
-      "<p style='padding:25px;text-align:center'>로드뷰 없음</p>";
+    rvc.getNearestPanoId(pos, 50, (panoId) => {
+      if (panoId) rv.setPanoId(panoId, pos);
+      else
+        container.innerHTML =
+          "<p style='padding:25px;text-align:center'>로드뷰 없음</p>";
+    });
+  }
+})();
+
+// 🔹 지표 텍스트 렌더링
+function renderMetricsText(stats) {
+  if (!stats || !stats.metrics) return '';
+
+  const labelMap = {
+    traffic: '일교통량(AADT)',
+    tourism: '관광지수(행정동)',
+    population: '인구수(행정동)',
+    commercial_density: '상권지수',
+    parcel_300m: '반경 300m 필지수',
+    parcel_500m: '반경 500m 필지수',
+  };
+
+  const m = stats.metrics;
+
+  const rows = Object.keys(m)
+    .map((key) => {
+      const name = labelMap[key] || key;
+      const rawVal = m[key];
+      let valueStr;
+
+      if (typeof rawVal === 'number') {
+        if (Math.abs(rawVal) < 1) {
+          valueStr = rawVal.toFixed(3);
+        } else if (Math.abs(rawVal) < 1000) {
+          valueStr = rawVal.toLocaleString();
+        } else {
+          valueStr = Math.round(rawVal).toLocaleString();
+        }
+      } else {
+        valueStr = rawVal;
+      }
+
+      return `
+        <div class="metric-row" style="
+          display:flex;
+          justify-content:space-between;
+          padding:4px 8px;
+          margin-bottom:4px;
+          background:#f8f9fa;
+          border-radius:6px;
+          border:1px solid #ececec;
+          font-size:13px;
+        ">
+          <span class="metric-label" style="font-weight:600;color:#333;">
+            ${name}
+          </span>
+          <span class="metric-value" style="color:#555;">
+            ${valueStr}
+          </span>
+        </div>
+      `;
+    })
+    .join('');
+
+  return `
+    <div class="metrics-text-container" style="
+      margin-bottom:10px;
+      display:block;
+    ">
+      ${rows}
+    </div>
+  `;
+}
+
+// ⭐ 통계 차트 함수 (relative 기반, 단위 %)
+function drawStatsChart(stats) {
+  if (!stats || !stats.relative) return;
+
+  const ctx = document.getElementById('metrics-chart');
+  if (!ctx) return;
+
+  const loadingText = document.getElementById('metrics-loading-text');
+  if (loadingText) loadingText.remove();
+
+  const labelMap = {
+    traffic: '일교통량(AADT)',
+    tourism: '관광지수(행정동)',
+    population: '인구수(행정동)',
+    commercial_density: '상권지수',
+    parcel_300m: '반경 300m 필지수',
+    parcel_500m: '반경 500m 필지수',
+  };
+
+  const keys = Object.keys(stats.relative);
+  const labels = keys.map((k) => labelMap[k] || k);
+  const relValues = keys.map((k) => stats.relative[k]);
+
+  if (window.statsChartInstance) {
+    window.statsChartInstance.destroy();
+  }
+
+  window.statsChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: '지역 평균 대비 상대값(%)',
+          data: relValues,
+          backgroundColor: relValues.map((v) =>
+            v >= 0 ? 'rgba(54, 162, 235, 0.75)' : 'rgba(250, 99, 132, 0.75)'
+          ),
+          borderColor: relValues.map((v) =>
+            v >= 0 ? '#2F80ED' : '#EB5757'
+          ),
+          borderWidth: 1.5,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.raw.toFixed(1)} %`,
+          },
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: '% (권역 평균 대비 증감률)',
+          },
+        },
+      },
+    },
   });
 }
-})();
