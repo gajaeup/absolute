@@ -32,6 +32,9 @@ export function drawMarkers(map, clusterer, stations) {
   const markers = [];
   let openOverlay = null;
   let closeTimer = null;
+  let isClickLocked = false;    
+  let lockedOverlay = null;
+  let lockedMarker = null;
 
   stations.forEach((station, idx) => {
     const lat = parseFloat(station['위도']);
@@ -43,9 +46,9 @@ export function drawMarkers(map, clusterer, stations) {
     if (isNaN(lat) || isNaN(lng)) return; // 좌표 없으면 스킵
 
         // ✅ 마커 이미지
-    const imageSrc ="https://map.pstatic.net/resource/api/v2/image/maps/selected-marker/229155@1x.png?version=19&mapping=marker-167";
+    const imageSrc ="/public/marker.png";
     const imageSize = new kakao.maps.Size(20, 28);
-    const imageOption = { offset: new kakao.maps.Point(15, 40) };
+    const imageOption = { offset: new kakao.maps.Point(15, 28) };
     const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
     
 
@@ -76,6 +79,12 @@ export function drawMarkers(map, clusterer, stations) {
         <div class="info-status">상태: <span class="status-badge" style="background:${color};">${status}</span></div>
       </div>
     `;
+    
+    const overlay = new kakao.maps.CustomOverlay({
+      position: marker.getPosition(),
+      content: iwEl, // ← 문자열이 아니라 실제 DOM 엘리먼트
+      yAnchor: 1.5,
+    });
 
     // ✅ 마우스가 카드 위에 올라가 있으면 닫힘 타이머 취소
     iwEl.addEventListener('mouseenter', () => {
@@ -84,8 +93,14 @@ export function drawMarkers(map, clusterer, stations) {
 
     // ✅ 카드에서 벗어나면 일정 시간 뒤 닫기
     iwEl.addEventListener('mouseleave', () => {
+      if (isClickLocked && lockedOverlay === overlay) return;
+
       closeTimer = setTimeout(() => {
-        if (openOverlay) openOverlay.setMap(null);
+        const hovered = document.querySelector('.info-window:hover');
+        if (!hovered && openOverlay) {
+          openOverlay.setMap(null);
+          openOverlay = null;
+        }
         openOverlay = null;
       }, 200);
     });
@@ -99,29 +114,46 @@ export function drawMarkers(map, clusterer, stations) {
           detail: { name, addr, status, lat, lng, imgUrl },
         })
       );
-
       if (openOverlay) openOverlay.setMap(null);
       openOverlay = null;
     });
 
-    const overlay = new kakao.maps.CustomOverlay({
-      position: marker.getPosition(),
-      content: iwEl, // ← 문자열이 아니라 실제 DOM 엘리먼트
-      yAnchor: 1.5,
-    });
+
 
     // ========== 마우스 오버 ==========
     kakao.maps.event.addListener(marker, 'mouseover', () => {
+      if (isClickLocked) return;
       if (closeTimer) clearTimeout(closeTimer);
-      if (openOverlay) openOverlay.setMap(null);
+      if (openOverlay && openOverlay !== overlay) {
+        openOverlay.setMap(null);
+      }
 
       overlay.setMap(map);
       openOverlay = overlay;
     });
 
+    kakao.maps.event.addListener(marker, 'click', () => {
+      if (openOverlay && openOverlay !== overlay) {
+        openOverlay.setMap(null);
+      }
+  
+      overlay.setMap(map);
+      openOverlay = overlay;
+    });
+
+
+    kakao.maps.event.addListener(marker, 'dblclick', () => {
+      window.dispatchEvent(
+        new CustomEvent('stationSelected', {
+          detail: { name, addr, status, lat, lng, imgUrl },
+        })
+      );
+    });
+
 
     // ========== 마우스 아웃 ==========
     kakao.maps.event.addListener(marker, 'mouseout', () => {
+      if (isClickLocked && lockedMarker === marker) return;
       closeTimer = setTimeout(() => {
         const hovered = document.querySelector('.info-window:hover');
         if (!hovered && openOverlay) {
@@ -145,7 +177,7 @@ export function highlightMarker(clusterer, targetMarker) {
   const largeSize = new kakao.maps.Size(35, 45); // 확 키운 버전
 
   const largeImage = new kakao.maps.MarkerImage(imageSrc, largeSize, {
-    offset: new kakao.maps.Point(20, 55),
+    offset: new kakao.maps.Point(17, 45),
   });
   if (!mapInstance) {
     console.error("mapInstance가 설정되지 않았습니다.");
