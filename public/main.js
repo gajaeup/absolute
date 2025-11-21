@@ -362,7 +362,6 @@ export async function initSearch(map, clusterer) {
             }
           </p>
         </section>
-
                 <div style="margin-top: 15px; text-align: center;">
              <a href="https://api.restation.site/api/stations/${stationId}/report" 
                 target="_blank" 
