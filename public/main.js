@@ -84,6 +84,11 @@ window.addEventListener('DOMContentLoaded', async () => {
   initRegionSearch(geoData, map);
   initSearchTabs();
 
+  kakao.maps.event.addListener(map, 'click', () => {
+    resetHighlight(clusterer);
+    window.dispatchEvent(new CustomEvent('mapClicked'));
+  });
+
   // 2️⃣ 지도 기본 표시 (현재 영역 내 주유소)
   try {
     const response = await fetchStationsInMap(map, 10000);
@@ -286,6 +291,7 @@ export async function initSearch(map, clusterer) {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeAllPanels();
   });
+  window.addEventListener('mapClicked', closeAllPanels);
 
   //👇수정사항
   // 🔔 지도 카드에서 주유소를 클릭했을 때 목록 패널 열기
