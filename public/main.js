@@ -342,7 +342,7 @@ export async function initSearch(map, clusterer) {
         <!-- 기본 정보 -->
         <p class="station-detail__name">주유소명 : ${station.name}</p>
         <p class="station-detail__addr">주소 : ${station.addr}</p>
-        <p class="station-detail__status">상태 : ${station.status}</p>\
+        <p class="station-detail__status">상태 : ${station.status} (${station.year} ~ )</p>\
         <!-- 지표 그래프 칸 (나중에 차트/지표값 들어갈 자리) -->
         <section class="station-detail__section">
               <h3 class="station-detail__section-title">지표 요약</h3>

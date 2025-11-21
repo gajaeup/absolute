@@ -43,6 +43,7 @@ export function drawMarkers(map, clusterer, stations) {
     const name = station['상호'] || '(이름없음)';
     const addr = station['정제주소'] || station['주소'] || '주소정보 없음';
     const status = station['상태'] || '정보 없음';
+    const year = station['년도']
 
     if (isNaN(lat) || isNaN(lng)) return; // 좌표 없으면 스킵
 
@@ -114,7 +115,7 @@ export function drawMarkers(map, clusterer, stations) {
 
       window.dispatchEvent(
         new CustomEvent('stationSelected', {
-          detail: { name, addr, status, lat, lng, imgUrl },
+          detail: { name, addr, status, lat, lng, imgUrl, year },
         })
       );
     });
@@ -145,7 +146,7 @@ export function drawMarkers(map, clusterer, stations) {
         // 🔥 여기서 사이드 패널 여는 이벤트 발송
         window.dispatchEvent(
           new CustomEvent('stationSelected', {
-            detail: { name, addr, status, lat, lng, imgUrl },
+            detail: { name, addr, status, lat, lng, imgUrl, year },
           })
         );
       }
