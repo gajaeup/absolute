@@ -135,6 +135,21 @@ body {
   font-size: 24px;
   margin-bottom: 7px;
 }
+.dashboard-icon {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 7px;
+}
+.search-icon {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 7px;
+}
+.help-icon {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 7px;
+}
 
 .main-vertical-nav li:hover {
   background-color: #f0f0f0;
