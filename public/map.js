@@ -7,7 +7,7 @@ export function setMapInstance(map) {
 }
 export function initMap() {
   const map = new kakao.maps.Map(document.getElementById('map'), {
-    center: new kakao.maps.LatLng(36.5, 127.8),
+    center: new kakao.maps.LatLng(36.3, 127.8),
     level: 12,
   });
   const btnRoadmap = document.getElementById('btn-roadmap');
