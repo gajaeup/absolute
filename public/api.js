@@ -77,16 +77,16 @@ export async function fetchStats(stationId) {
 
 // 차량 기반시설 API
 export async function fetchVehicle(stationId) {
-  const res = await fetch(`/api/stations/${stationId}/vehicle`);
+  const res = await fetch(`${API_BASE}/api/stations/${stationId}/vehicle`);
   if (!res.ok) return null;
   return await res.json();
 }
 
 // EV 충전소 API
 export async function fetchEv(stationId) {
-  const res = await fetch(`/api/stations/${stationId}/ev`);
-  if (!res.ok) return null;
-  return await res.json();
+   const res = await fetch(`${API_BASE}/api/stations/${stationId}/ev`);
+   if (!res.ok) return null;
+   return await res.json();
 }
 
 // 행정동 통계 API

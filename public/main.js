@@ -249,9 +249,6 @@ export async function initSearch(map, clusterer) {
     if (panel === panels.list) {
       closeRoadview();
     }
-    if (panel === panels.feature) {  // ⭐ 롤백 시 제거
-      closeRoadview();
-    }    
     if (!anyOpen()) pushSearch(false); // 둘 다 닫히면 검색창 원위치
     syncActiveState(); // 🔹 버튼 active 상태 반영
   }
