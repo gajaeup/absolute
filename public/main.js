@@ -10,7 +10,10 @@ import {
   fetchStationsInMap,
   searchStations,
   fetchRecommendation,
-  fetchStats,   
+  fetchStats,
+  fetchVehicle,
+  fetchEv,
+  fetchAdminStats,
 } from './api.js';
 import {
   switchSearchMode,
@@ -471,7 +474,7 @@ function renderMetricsText(stats) {
   `;
 }
 
-// ⭐ 통계 차트 함수 (relative 기반, 단위 %)
+// 통계 차트 함수 (relative 기반, 단위 %)
 function drawStatsChart(stats) {
   if (!stats || !stats.relative) return;
 
@@ -538,3 +541,100 @@ function drawStatsChart(stats) {
     },
   });
 }
+
+let vehicleMarkers = [];
+let evMarkers = [];
+
+function clearMarkers(arr) {
+  arr.forEach((m) => m.setMap(null));
+  return [];
+}
+
+// =============================
+// 🔹 행정동 정보 버튼
+// =============================
+document.getElementById("btn-admin-info")?.addEventListener("click", async () => {
+  if (!window.selectedStation) {
+    return alert("주유소를 먼저 선택하세요.");
+  }
+
+  const station = window.selectedStation;
+  const stationId =
+    `${Math.round(station.lat * 1_000_000)}_${Math.round(station.lng * 1_000_000)}`;
+
+  const data = await fetchAdminStats(stationId);
+  if (!data) return alert("행정동 정보를 불러올 수 없습니다.");
+
+  const box = document.getElementById("dashboard-detail");
+  if (!box) return;
+
+  box.innerHTML = `
+    <div class="dash-info-box" style="
+      padding:12px;border:1px solid #ddd;border-radius:8px;margin-top:10px;
+      background:#fafafa;font-size:14px;line-height:1.5;
+    ">
+      <div><b>행정동:</b> ${data.region ?? '-'}</div>
+      <div><b>인구:</b> ${data.population ?? '-'}</div>
+      <div><b>교통량:</b> ${data.traffic ?? '-'}</div>
+      <div><b>상권 밀집도:</b> ${data.commercial_density ?? '-'}</div>
+      <div><b>관광지수:</b> ${data.tourism ?? '-'}</div>
+    </div>
+  `;
+  box.style.display = "block";
+});
+
+
+// =============================
+// 🔹 차량 기반시설 버튼
+// =============================
+document.getElementById("btn-vehicle")?.addEventListener("click", async () => {
+  if (!window.selectedStation) return alert("주유소를 먼저 선택하세요.");
+
+  const station = window.selectedStation;
+  const stationId =
+    `${Math.round(station.lat * 1_000_000)}_${Math.round(station.lng * 1_000_000)}`;
+
+  const data = await fetchVehicle(stationId);
+  if (!data) return;
+
+  // 기존 마커 제거
+  vehicleMarkers = clearMarkers(vehicleMarkers);
+
+  data["정비소"].concat(data["세차장"], data["타이어"], data["카센터"]).forEach((item) => {
+    const mk = new kakao.maps.Marker({
+      map: window.mapRef,
+      position: new kakao.maps.LatLng(item.lat, item.lng),
+    });
+    vehicleMarkers.push(mk);
+  });
+
+  alert(`총 ${data.total_count}개 차량기반시설 표시됨`);
+});
+
+
+// =============================
+// 🔹 EV 충전소 버튼
+// =============================
+document.getElementById("btn-ev")?.addEventListener("click", async () => {
+  if (!window.selectedStation) return alert("주유소를 먼저 선택하세요.");
+
+  const station = window.selectedStation;
+  const stationId =
+    `${Math.round(station.lat * 1_000_000)}_${Math.round(station.lng * 1_000_000)}`;
+
+  const data = await fetchEv(stationId);
+  if (!data) return;
+
+  // 기존 ev 마커 제거
+  evMarkers = clearMarkers(evMarkers);
+
+  data.items.forEach((item) => {
+    const mk = new kakao.maps.Marker({
+      map: window.mapRef,
+      position: new kakao.maps.LatLng(item.lat, item.lng),
+    });
+    evMarkers.push(mk);
+  });
+
+  alert(`EV 충전소 ${data.count}개 표시됨`);
+});
