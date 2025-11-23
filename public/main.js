@@ -13,7 +13,6 @@ import {
   fetchStats,
   fetchVehicle,
   fetchEv,
-  fetchAdminStats,
 } from './api.js';
 import {
   switchSearchMode,
