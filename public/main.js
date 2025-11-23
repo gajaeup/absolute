@@ -313,6 +313,7 @@ export async function initSearch(map, clusterer) {
   // 🔔 지도 카드에서 주유소를 클릭했을 때 목록 패널 열기
   window.addEventListener('stationSelected', async (e) => {
     const station = e.detail;
+    window.selectedStation = station;
 
     const clusterer = window.clustererRef;
     if (clusterer) {
