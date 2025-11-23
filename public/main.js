@@ -11,8 +11,9 @@ import {
   searchStations,
   fetchRecommendation,
   fetchStats,
-  fetchVehicle,
-  fetchEv,
+  fetchVehicle,   // ⭐ 롤백 시 제거
+  fetchEv,   // ⭐ 롤백 시 제거
+  fetchAdminStats,   // ⭐ 롤백 시 제거
 } from './api.js';
 import {
   switchSearchMode,
@@ -196,14 +197,17 @@ export async function initSearch(map, clusterer) {
 (function () {
   // 버튼 & 요소
   const listBtn = document.getElementById('nav-list-btn');
+  const featureBtn = document.getElementById('nav-feature-btn');   // ⭐ 롤백 시 제거
   const guideBtn = document.getElementById('nav-guide-btn');
   const searchBtn = document.getElementById('nav-search-btn'); // 다른 아이콘 누르면 닫기용
   const panels = {
     list: document.getElementById('list-panel'),
+    feature: document.getElementById('feature-panel'),  // ⭐ 롤백 시 제거
     guide: document.getElementById('guide-panel'),
   };
   const closeBtns = {
     list: document.getElementById('list-panel-close'),
+    feature: document.getElementById('feature-panel-close'),  // ⭐ 롤백 시 제거
     guide: document.getElementById('guide-panel-close'),
   };
   const searchBox = document.querySelector('.search-container');
@@ -245,6 +249,9 @@ export async function initSearch(map, clusterer) {
     if (panel === panels.list) {
       closeRoadview();
     }
+    if (panel === panels.feature) {  // ⭐ 롤백 시 제거
+      closeRoadview();
+    }    
     if (!anyOpen()) pushSearch(false); // 둘 다 닫히면 검색창 원위치
     syncActiveState(); // 🔹 버튼 active 상태 반영
   }
@@ -266,6 +273,10 @@ export async function initSearch(map, clusterer) {
       if (isOpen(panels.list)) listBtn.classList.add('active');
       else listBtn.classList.remove('active');
     }
+    if (featureBtn) {   // ⭐ 롤백 시 제거
+      if (isOpen(panels.feature)) featureBtn.classList.add('active');
+      else featureBtn.classList.remove('active');
+    }
     if (guideBtn) {
       if (isOpen(panels.guide)) guideBtn.classList.add('active');
       else guideBtn.classList.remove('active');
@@ -280,12 +291,15 @@ export async function initSearch(map, clusterer) {
   }
 
   // 이벤트 바인딩
+  if (featureBtn) featureBtn.addEventListener('click', () => toggle(panels.feature));   // ⭐ 롤백 시 제거
   if (listBtn) listBtn.addEventListener('click', () => toggle(panels.list));
   if (guideBtn) guideBtn.addEventListener('click', () => toggle(panels.guide));
   if (searchBtn) searchBtn.addEventListener('click', closeAllPanels); // 🔍 누르면 닫기
 
   if (closeBtns.list)
     closeBtns.list.addEventListener('click', () => closePanel(panels.list));
+  if (closeBtns.feature)   // ⭐ 롤백 시 제거
+    closeBtns.feature.addEventListener('click', () => closePanel(panels.feature));
   if (closeBtns.guide)
     closeBtns.guide.addEventListener('click', () => closePanel(panels.guide));
 
