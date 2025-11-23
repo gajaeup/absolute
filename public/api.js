@@ -89,3 +89,10 @@ export async function fetchEv(stationId) {
   return await res.json();
 }
 
+// 행정동 통계 API
+export async function fetchAdminStats(stationId) {
+  const res = await fetch(`${API_BASE}/api/stations/${stationId}/admin`);
+  if (!res.ok) return null;
+  return await res.json();
+}
+

@@ -340,7 +340,7 @@ export async function initSearch(map, clusterer) {
     const recData = await fetchRecommendation(stationId);
     console.log('📌 추천 결과:', recData);
 
-    // ⭐ 3) 통계 API 호출
+    // 3) 통계 API 호출
     const stats = await fetchStats(stationId);
     console.log('📊 통계 결과:', stats);
 
@@ -397,7 +397,7 @@ export async function initSearch(map, clusterer) {
     `;
     }
 
-    // ⭐ 통계 차트 렌더링
+    // 통계 차트 렌더링
     drawStatsChart(stats);
 
     // 📋 목록 패널 열고, 검색창 오른쪽으로 밀기 + 버튼 active 처리
@@ -564,7 +564,7 @@ function clearMarkers(arr) {
 }
 
 // =============================
-// 🔹 행정동 정보 버튼
+// 행정동 정보 버튼 - ⭐ 롤백 시 제거
 // =============================
 document.getElementById("btn-admin-info")?.addEventListener("click", async () => {
   if (!window.selectedStation) {
@@ -598,7 +598,7 @@ document.getElementById("btn-admin-info")?.addEventListener("click", async () =>
 
 
 // =============================
-// 🔹 차량 기반시설 버튼
+// 차량 기반시설 버튼 - ⭐ 롤백 시 제거
 // =============================
 document.getElementById("btn-vehicle")?.addEventListener("click", async () => {
   if (!window.selectedStation) return alert("주유소를 먼저 선택하세요.");
@@ -626,7 +626,7 @@ document.getElementById("btn-vehicle")?.addEventListener("click", async () => {
 
 
 // =============================
-// 🔹 EV 충전소 버튼
+// EV 충전소 버튼 - ⭐ 롤백 시 제거
 // =============================
 document.getElementById("btn-ev")?.addEventListener("click", async () => {
   if (!window.selectedStation) return alert("주유소를 먼저 선택하세요.");
