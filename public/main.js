@@ -321,6 +321,12 @@ export async function initSearch(map, clusterer) {
 
       clearBufferCircle();
       drawBufferCircle(lat, lng, 500);
+      
+      // 추가: 화면 이동 + 확대
+    const offset = 0.0025; // 필요하면 0.002 ~ 0.004 사이로 조절
+    const pos = new kakao.maps.LatLng(lat, lng - offset);
+      window.mapRef.setLevel(4);   // 원하는 확대 레벨 (3~5가 적당)
+      window.mapRef.panTo(pos);    // 지도를 해당 주유소로 이동
     }, 50);
   });
 

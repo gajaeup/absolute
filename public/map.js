@@ -241,7 +241,7 @@ export function drawBufferCircle(lat, lng, radius = 5000) {
   bufferCircle = new kakao.maps.Circle({
     center: new kakao.maps.LatLng(lat, lng),
     radius: radius, // 5000m
-    strokeWeight: 3,
+    strokeWeight: 1,
     strokeColor: '#1E90FF',
     strokeOpacity: 0.8,
     strokeStyle: 'solid',
