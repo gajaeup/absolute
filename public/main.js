@@ -246,6 +246,13 @@ export async function initSearch(map, clusterer) {
     panel.setAttribute('aria-hidden', 'false');
     pushSearch(true);
     syncActiveState(); // 🔹 버튼 active 상태 반영
+  
+    // ⭐ 롤백 시 제거 - 대시보드 패널 열릴 때는 주변 정보 모두 제거
+    if (panel === panels.list) {
+      vehicleMarkers = clearMarkers(vehicleMarkers);
+      evMarkers = clearMarkers(evMarkers);
+      clearBufferCircle();
+    }
   }
 
   function closePanel(panel) {
@@ -255,7 +262,7 @@ export async function initSearch(map, clusterer) {
     if (panel === panels.list) {
       closeRoadview();
     }
-    // // ⭐ 롤백 시 제거 - 주변 정보 패널 닫힐 때 지도 정리
+    // ⭐ 롤백 시 제거 - 주변 정보 패널 닫힐 때 지도 정리
     if (panel === panels.feature) {
       vehicleMarkers = clearMarkers(vehicleMarkers);
       evMarkers = clearMarkers(evMarkers);
@@ -338,6 +345,20 @@ export async function initSearch(map, clusterer) {
   //👇수정사항
   // 🔔 지도 카드에서 주유소를 클릭했을 때 목록 패널 열기
   window.addEventListener('stationSelected', async (e) => {
+
+    // ⭐ 롤백 시 제거 - 다른 주유소 클릭하면 이전 주변정보 즉시 제거
+    vehicleMarkers = clearMarkers(vehicleMarkers);
+    evMarkers = clearMarkers(evMarkers);
+    clearBufferCircle();
+
+    // ⭐ 롤백 시 제거 - 버튼 상태 리셋 추가
+    document.getElementById("btn-vehicle")?.classList.remove("active");
+    document.getElementById("btn-ev")?.classList.remove("active");
+
+    // ⭐ 롤백 시 제거 - 버튼 내부 상태도 반드시 초기화
+    vehicleVisible = false;
+    evVisible = false;
+    
     const station = e.detail;
     window.selectedStation = station;
 
@@ -636,12 +657,16 @@ document.getElementById("btn-admin-info")?.addEventListener("click", async () =>
 // =============================
 let vehicleVisible = false;
 
+const btnVehicle = document.getElementById("btn-vehicle");
+const btnEv = document.getElementById("btn-ev");
+
 document.getElementById("btn-vehicle")?.addEventListener("click", async () => {
   if (!window.selectedStation) return alert("주유소를 먼저 선택하세요.");
 
   if (vehicleVisible) {
     vehicleMarkers = clearMarkers(vehicleMarkers);
     vehicleVisible = false;
+    btnVehicle.classList.remove("active");   // 버튼 상태 해제
     console.log("🚗 차량기반시설 마커 제거됨");
     return;
   }
@@ -669,6 +694,7 @@ document.getElementById("btn-vehicle")?.addEventListener("click", async () => {
     });
 
   vehicleVisible = true;
+  btnVehicle.classList.add("active");   // 버튼 상태 활성화
   console.log(`🚗 차량기반시설 ${data.total_count}개 표시됨`);
 });
 
@@ -683,6 +709,7 @@ document.getElementById("btn-ev")?.addEventListener("click", async () => {
   if (evVisible) {
     evMarkers = clearMarkers(evMarkers);
     evVisible = false;
+    btnEv.classList.remove("active");   // 상태 삭제
     console.log("🔌 EV 충전소 마커 제거됨");
     return;
   }
@@ -708,5 +735,6 @@ document.getElementById("btn-ev")?.addEventListener("click", async () => {
   });
 
   evVisible = true;
+  btnEv.classList.add("active");   // 상태 활성화
   console.log(`🔌 EV 충전소 ${data.count}개 표시됨`);
 });
