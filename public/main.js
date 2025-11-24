@@ -10,7 +10,10 @@ import {
   fetchStationsInMap,
   searchStations,
   fetchRecommendation,
-  fetchStats,   
+  fetchStats,
+  fetchVehicle,   // ⭐ 롤백 시 제거
+  fetchEv,   // ⭐ 롤백 시 제거
+  fetchAdminStats,   // ⭐ 롤백 시 제거
 } from './api.js';
 import {
   switchSearchMode,
@@ -18,6 +21,11 @@ import {
   loadSidoData,
   initRegionSearch,
 } from './search.js';
+
+import {   // ⭐ 롤백 시 통째로 제거
+  drawBufferCircle, 
+  clearBufferCircle 
+} from './map.js';
 
 async function loadKakaoSDK() {
   let apiKey;
@@ -54,6 +62,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   const map = initMap();
   setMapInstance(map);
   initSearchTabs();
+  window.mapRef = map;   // ⭐ 롤백 시 제거
 
   // 1️⃣ 지도 초기화
   const clusterer = new kakao.maps.MarkerClusterer({
@@ -194,14 +203,17 @@ export async function initSearch(map, clusterer) {
 (function () {
   // 버튼 & 요소
   const listBtn = document.getElementById('nav-list-btn');
+  const featureBtn = document.getElementById('nav-feature-btn');   // ⭐ 롤백 시 제거
   const guideBtn = document.getElementById('nav-guide-btn');
   const searchBtn = document.getElementById('nav-search-btn'); // 다른 아이콘 누르면 닫기용
   const panels = {
     list: document.getElementById('list-panel'),
+    feature: document.getElementById('feature-panel'),  // ⭐ 롤백 시 제거
     guide: document.getElementById('guide-panel'),
   };
   const closeBtns = {
     list: document.getElementById('list-panel-close'),
+    feature: document.getElementById('feature-panel-close'),  // ⭐ 롤백 시 제거
     guide: document.getElementById('guide-panel-close'),
   };
   const searchBox = document.querySelector('.search-container');
@@ -226,35 +238,59 @@ export async function initSearch(map, clusterer) {
       container.innerHTML = ''; // 메모리 정리를 위해 내용 비우기
     }
   }
-
+  /*
   function openPanel(panel) {
     if (!panel) return;
     closeAllPanels(); // ✅ 다른 패널은 자동으로 닫힘
+  */
+  function openPanel(panel, keepRoadview = false) {
+    if (!panel) return;
+    closeAllPanels(!keepRoadview);   // keepRoadview=true면 닫지 않음
     panel.classList.add('is-open');
     panel.setAttribute('aria-hidden', 'false');
     pushSearch(true);
     syncActiveState(); // 🔹 버튼 active 상태 반영
+  
+    // ⭐ 롤백 시 제거 - 대시보드 패널 열릴 때는 주변 정보 모두 제거
+    if (panel === panels.list) {
+      vehicleMarkers = clearMarkers(vehicleMarkers);
+      evMarkers = clearMarkers(evMarkers);
+      clearBufferCircle();
+    }
   }
 
   function closePanel(panel) {
     if (!panel) return;
     panel.classList.remove('is-open');
     panel.setAttribute('aria-hidden', 'true');
+    /*
     if (panel === panels.list) {
       closeRoadview();
     }
+      */
+    // ⭐ 롤백 시 제거 - 주변 정보 패널 닫힐 때 지도 정리
+    if (panel === panels.feature) {
+      vehicleMarkers = clearMarkers(vehicleMarkers);
+      evMarkers = clearMarkers(evMarkers);
+      clearBufferCircle();
+    }
+    
     if (!anyOpen()) pushSearch(false); // 둘 다 닫히면 검색창 원위치
     syncActiveState(); // 🔹 버튼 active 상태 반영
   }
 
-  function closeAllPanels() {
+  /* function closeAllPanels() { */
+  function closeAllPanels(shouldCloseRoadview = true) {
     Object.values(panels).forEach((p) => {
       if (p && isOpen(p)) {
         p.classList.remove('is-open');
         p.setAttribute('aria-hidden', 'true');
       }
     });
-    closeRoadview();
+    /* closeRoadview(); */
+    if (shouldCloseRoadview) {
+      closeRoadview();
+    }
     pushSearch(false);
     syncActiveState(); // 🔹 둘 다 닫혔으니 active 제거
   }
@@ -264,26 +300,67 @@ export async function initSearch(map, clusterer) {
       if (isOpen(panels.list)) listBtn.classList.add('active');
       else listBtn.classList.remove('active');
     }
+    if (featureBtn) {   // ⭐ 롤백 시 제거
+      if (isOpen(panels.feature)) featureBtn.classList.add('active');
+      else featureBtn.classList.remove('active');
+    }
     if (guideBtn) {
       if (isOpen(panels.guide)) guideBtn.classList.add('active');
       else guideBtn.classList.remove('active');
     }
   }
 
+  /*
   // 토글
   function toggle(panel) {
     if (!panel) return;
     if (isOpen(panel)) closePanel(panel);
     else openPanel(panel);
   }
+  */
+  function toggle(panel, keepRoadview = false) {
+    if (!panel) return;
+    if (isOpen(panel)) closePanel(panel);
+    else openPanel(panel, keepRoadview);
+  }
 
   // 이벤트 바인딩
+  // ⭐ 롤백 시 제거
+  /*
+  if (featureBtn) featureBtn.addEventListener('click', () => toggle(panels.feature));
+  */
+  if (featureBtn) featureBtn.addEventListener('click', () => toggle(panels.feature, true))
+  // ⭐ 롤백 시 제거 - 주변 정보 패널 클릭 시 500m 버퍼 표시
+  featureBtn?.addEventListener('click', () => {
+      // 패널이 열리지 않은 상태에서 클릭하면 toggle → openPanel → is-open 상태됨
+      setTimeout(() => {
+      if (!panels.feature.classList.contains('is-open')) return;
+      if (!window.selectedStation) return;
+
+      const { lat, lng } = window.selectedStation;
+
+      clearBufferCircle();
+      drawBufferCircle(lat, lng, 500);
+      
+      // 추가: 화면 이동 + 확대
+    const offset = 0.0025; // 필요하면 0.002 ~ 0.004 사이로 조절
+    const pos = new kakao.maps.LatLng(lat, lng - offset);
+      window.mapRef.setLevel(4);   // 원하는 확대 레벨 (3~5가 적당)
+      window.mapRef.panTo(pos);    // 지도를 해당 주유소로 이동
+    }, 50);
+  });
+
+  /*
   if (listBtn) listBtn.addEventListener('click', () => toggle(panels.list));
+  */
+  if (listBtn) listBtn.addEventListener('click', () => toggle(panels.list, true));
   if (guideBtn) guideBtn.addEventListener('click', () => toggle(panels.guide));
   if (searchBtn) searchBtn.addEventListener('click', closeAllPanels); // 🔍 누르면 닫기
 
   if (closeBtns.list)
     closeBtns.list.addEventListener('click', () => closePanel(panels.list));
+  if (closeBtns.feature)   // ⭐ 롤백 시 제거
+    closeBtns.feature.addEventListener('click', () => closePanel(panels.feature));
   if (closeBtns.guide)
     closeBtns.guide.addEventListener('click', () => closePanel(panels.guide));
 
@@ -296,7 +373,22 @@ export async function initSearch(map, clusterer) {
   //👇수정사항
   // 🔔 지도 카드에서 주유소를 클릭했을 때 목록 패널 열기
   window.addEventListener('stationSelected', async (e) => {
+
+    // ⭐ 롤백 시 제거 - 다른 주유소 클릭하면 이전 주변정보 즉시 제거
+    vehicleMarkers = clearMarkers(vehicleMarkers);
+    evMarkers = clearMarkers(evMarkers);
+    clearBufferCircle();
+
+    // ⭐ 롤백 시 제거 - 버튼 상태 리셋 추가
+    document.getElementById("btn-vehicle")?.classList.remove("active");
+    document.getElementById("btn-ev")?.classList.remove("active");
+
+    // ⭐ 롤백 시 제거 - 버튼 내부 상태도 반드시 초기화
+    vehicleVisible = false;
+    evVisible = false;
+    
     const station = e.detail;
+    window.selectedStation = station;
 
     const clusterer = window.clustererRef;
     if (clusterer) {
@@ -324,7 +416,7 @@ export async function initSearch(map, clusterer) {
     const recData = await fetchRecommendation(stationId);
     console.log('📌 추천 결과:', recData);
 
-    // ⭐ 3) 통계 API 호출
+    // 3) 통계 API 호출
     const stats = await fetchStats(stationId);
     console.log('📊 통계 결과:', stats);
 
@@ -381,13 +473,20 @@ export async function initSearch(map, clusterer) {
     `;
     }
 
-    // ⭐ 통계 차트 렌더링
+    // 통계 차트 렌더링
     drawStatsChart(stats);
 
     // 📋 목록 패널 열고, 검색창 오른쪽으로 밀기 + 버튼 active 처리
     openPanel(panel);
     showRoadview(station.lat, station.lng);
+    
+    // ⭐ 롤백 시 제거 - 주변정보 패널이 열려 있으면 500m 버퍼 다시 그림
+    if (panels.feature.classList.contains('is-open')) {
+      clearBufferCircle();
+      drawBufferCircle(station.lat, station.lng, 500);
+    }
   });
+
   function showRoadview(lat, lng) {
     const container = document.getElementById('floating-roadview');
     container.classList.remove('hidden');
@@ -471,7 +570,7 @@ function renderMetricsText(stats) {
   `;
 }
 
-// ⭐ 통계 차트 함수 (relative 기반, 단위 %)
+// 통계 차트 함수 (relative 기반, 단위 %)
 function drawStatsChart(stats) {
   if (!stats || !stats.relative) return;
 
@@ -538,3 +637,132 @@ function drawStatsChart(stats) {
     },
   });
 }
+
+let vehicleMarkers = [];
+let evMarkers = [];
+
+function clearMarkers(arr) {
+  arr.forEach((m) => m.setMap(null));
+  return [];
+}
+
+// =============================
+// 행정동 정보 버튼 - ⭐ 롤백 시 제거
+// =============================
+document.getElementById("btn-admin-info")?.addEventListener("click", async () => {
+  if (!window.selectedStation) {
+    return alert("주유소를 먼저 선택하세요.");
+  }
+
+  const station = window.selectedStation;
+  const stationId =
+    `${Math.round(station.lat * 1_000_000)}_${Math.round(station.lng * 1_000_000)}`;
+
+  const data = await fetchAdminStats(stationId);
+  if (!data) return alert("행정동 정보를 불러올 수 없습니다.");
+
+  const box = document.getElementById("dashboard-detail");
+  if (!box) return;
+
+  box.innerHTML = `
+    <div class="dash-info-box" style="
+      padding:12px;border:1px solid #ddd;border-radius:8px;margin-top:10px;
+      background:#fafafa;font-size:14px;line-height:1.5;
+    ">
+      <div><b>행정동:</b> ${data.region ?? '-'}</div>
+      <div><b>인구:</b> ${data.population ?? '-'}</div>
+      <div><b>교통량:</b> ${data.traffic ?? '-'}</div>
+      <div><b>상권 밀집도:</b> ${data.commercial_density ?? '-'}</div>
+      <div><b>관광지수:</b> ${data.tourism ?? '-'}</div>
+    </div>
+  `;
+  box.style.display = "block";
+});
+
+
+// =============================
+// 차량 기반시설 버튼 - ⭐ 롤백 시 제거
+// =============================
+let vehicleVisible = false;
+
+const btnVehicle = document.getElementById("btn-vehicle");
+const btnEv = document.getElementById("btn-ev");
+
+document.getElementById("btn-vehicle")?.addEventListener("click", async () => {
+  if (!window.selectedStation) return alert("주유소를 먼저 선택하세요.");
+
+  if (vehicleVisible) {
+    vehicleMarkers = clearMarkers(vehicleMarkers);
+    vehicleVisible = false;
+    btnVehicle.classList.remove("active");   // 버튼 상태 해제
+    console.log("🚗 차량기반시설 마커 제거됨");
+    return;
+  }
+
+  const station = window.selectedStation;
+  const stationId =
+    `${Math.round(station.lat * 1_000_000)}_${Math.round(station.lng * 1_000_000)}`;
+
+  const data = await fetchVehicle(stationId);
+  if (!data) {
+    console.log("🚗 차량기반시설 API 실패");
+    return;
+  }
+
+  // 기존 마커 제거
+  vehicleMarkers = clearMarkers(vehicleMarkers);
+
+  data["정비소"].concat(data["세차장"], data["타이어"], data["카센터"])
+    .forEach((item) => {
+      const mk = new kakao.maps.Marker({
+        map: window.mapRef,
+        position: new kakao.maps.LatLng(item.lat, item.lng),
+      });
+      vehicleMarkers.push(mk);
+    });
+
+  vehicleVisible = true;
+  btnVehicle.classList.add("active");   // 버튼 상태 활성화
+  console.log(`🚗 차량기반시설 ${data.total_count}개 표시됨`);
+});
+
+// =============================
+// EV 충전소 버튼 - ⭐ 롤백 시 제거
+// =============================
+let evVisible = false;
+
+document.getElementById("btn-ev")?.addEventListener("click", async () => {
+  if (!window.selectedStation) return alert("주유소를 먼저 선택하세요.");
+
+  if (evVisible) {
+    evMarkers = clearMarkers(evMarkers);
+    evVisible = false;
+    btnEv.classList.remove("active");   // 상태 삭제
+    console.log("🔌 EV 충전소 마커 제거됨");
+    return;
+  }
+
+  const station = window.selectedStation;
+  const stationId =
+    `${Math.round(station.lat * 1_000_000)}_${Math.round(station.lng * 1_000_000)}`;
+
+  const data = await fetchEv(stationId);
+  if (!data) {
+    console.log("🔌 EV API 실패");
+    return;
+  }
+
+  evMarkers = clearMarkers(evMarkers);
+
+  data.items.forEach((item) => {
+    const mk = new kakao.maps.Marker({
+      map: window.mapRef,
+      position: new kakao.maps.LatLng(item.lat, item.lng),
+    });
+    evMarkers.push(mk);
+  });
+
+  evVisible = true;
+  btnEv.classList.add("active");   // 상태 활성화
+  console.log(`🔌 EV 충전소 ${data.count}개 표시됨`);
+});

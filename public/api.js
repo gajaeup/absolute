@@ -75,3 +75,24 @@ export async function fetchStats(stationId) {
   return res.ok ? res.json() : null;
 }
 
+// 차량 기반시설 API
+export async function fetchVehicle(stationId) {
+  const res = await fetch(`${API_BASE}/api/stations/${stationId}/vehicle`);
+  if (!res.ok) return null;
+  return await res.json();
+}
+
+// EV 충전소 API
+export async function fetchEv(stationId) {
+   const res = await fetch(`${API_BASE}/api/stations/${stationId}/ev`);
+   if (!res.ok) return null;
+   return await res.json();
+}
+
+// 행정동 통계 API
+export async function fetchAdminStats(stationId) {
+  const res = await fetch(`${API_BASE}/api/stations/${stationId}/admin`);
+  if (!res.ok) return null;
+  return await res.json();
+}
+

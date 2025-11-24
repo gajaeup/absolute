@@ -6,6 +6,18 @@
   <title>폐·휴업 주유소 클러스터 지도</title>
   <link rel="stylesheet" href="./public/main.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <style>
+    .info-nav a {
+      font-weight: 5;
+      letter-spacing: 0.25px;
+      font-stretch: 100%;
+    }
+    .info-nav ul {
+      display: flex;
+      gap: 100px;  /* 카테고리 사이 간격 조정 */
+    }
+  </style>
+
 </head>
 
 <body>
@@ -16,11 +28,17 @@
     <nav class="info-nav">
       <ul>
         <li>
-          <a href="background.html" data-info="background">구현 배경</a>
+          <a href="background.html" data-info="background" style="font-weight:440;">구현 배경</a>
         </li>
-        <li><a href="casestudy.html" data-info="cases">실제 사례</a></li>
-        <li><a href="faq.html" data-info="faq">FAQ</a></li>
-        <li><a href="datasource.html" data-info="data">데이터 출처</a></li>
+        <li>
+          <a href="casestudy.html" data-info="cases" style="font-weight:440;">실제 사례</a>
+        </li>
+        <li>
+          <a href="faq.html" data-info="faq" style="font-weight:440;">FAQ</a>
+        </li>
+        <li>
+          <a href="datasource.html" data-info="data" style="font-weight:440;">데이터 출처</a>
+        </li>
       </ul>
     </nav>
   </header>
@@ -35,6 +53,9 @@
         </li>
         <li id="nav-list-btn" data-target="list">
           <img src="/public/page.png" alt="대시보드" class="dashboard-icon"><span>대시보드</span>
+        </li>
+        <li id="nav-feature-btn" data-target="feature">
+          <img src="/public/category.png" alt="주변정보" class="dashboard-icon"><span>주변 정보</span>
         </li>
         <li id="nav-guide-btn" data-target="guide">
           <img src="/public/question.png" alt="도움말" class="help-icon"><span>도움말</span>
@@ -52,6 +73,22 @@
     <div class="side-panel__body">
       <!-- 여기에 목록 콘텐츠 렌더링 -->
       준비중입니다…
+    </div>
+  </div>
+
+  <!-- 주변 정보 패널 (새 패널 추가) -->
+  <div id="feature-panel" class="side-panel" aria-hidden="true">
+    <div class="side-panel__header">
+      <strong>주변 정보</strong>
+      <button type="button" id="feature-panel-close" aria-label="닫기">×</button>
+    </div>
+
+    <div class="side-panel__body">
+      <button id="btn-admin-info" class="dash-btn">📌 행정동 정보</button>
+      <button id="btn-vehicle" class="dash-btn">🚗 차량 기반시설</button>
+      <button id="btn-ev" class="dash-btn">🔌 EV 충전소</button>
+
+      <div id="dashboard-detail" style="margin-top:12px;"></div>
     </div>
   </div>
 

@@ -224,3 +224,37 @@ export function resetHighlight(clusterer) {
     lastOriginalMarker = null;
   }
 }
+
+// ⭐ 롤백 시 제거 - 주유소 주변 버퍼 표시 기능
+export function getMapInstance() {
+  return mapInstance;
+}
+
+let bufferCircle = null;
+
+export function drawBufferCircle(lat, lng, radius = 5000) {
+  // 기존 buffer 있으면 제거
+  if (bufferCircle) {
+    bufferCircle.setMap(null);
+  }
+
+  bufferCircle = new kakao.maps.Circle({
+    center: new kakao.maps.LatLng(lat, lng),
+    radius: radius, // 5000m
+    strokeWeight: 1,
+    strokeColor: '#1E90FF',
+    strokeOpacity: 0.8,
+    strokeStyle: 'solid',
+    fillColor: '#1E90FF',
+    fillOpacity: 0.2,
+  });
+
+  bufferCircle.setMap(getMapInstance());
+}
+
+export function clearBufferCircle() {
+  if (bufferCircle) {
+    bufferCircle.setMap(null);
+    bufferCircle = null;
+  }
+}
