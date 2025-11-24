@@ -238,10 +238,14 @@ export async function initSearch(map, clusterer) {
       container.innerHTML = ''; // 메모리 정리를 위해 내용 비우기
     }
   }
-
+  /*
   function openPanel(panel) {
     if (!panel) return;
     closeAllPanels(); // ✅ 다른 패널은 자동으로 닫힘
+  */
+  function openPanel(panel, keepRoadview = false) {
+    if (!panel) return;
+    closeAllPanels(!keepRoadview);   // keepRoadview=true면 닫지 않음
     panel.classList.add('is-open');
     panel.setAttribute('aria-hidden', 'false');
     pushSearch(true);
@@ -259,28 +263,34 @@ export async function initSearch(map, clusterer) {
     if (!panel) return;
     panel.classList.remove('is-open');
     panel.setAttribute('aria-hidden', 'true');
+    /*
     if (panel === panels.list) {
       closeRoadview();
     }
+      */
     // ⭐ 롤백 시 제거 - 주변 정보 패널 닫힐 때 지도 정리
     if (panel === panels.feature) {
       vehicleMarkers = clearMarkers(vehicleMarkers);
       evMarkers = clearMarkers(evMarkers);
-
       clearBufferCircle();
     }
+    
     if (!anyOpen()) pushSearch(false); // 둘 다 닫히면 검색창 원위치
     syncActiveState(); // 🔹 버튼 active 상태 반영
   }
 
-  function closeAllPanels() {
+  /* function closeAllPanels() { */
+  function closeAllPanels(shouldCloseRoadview = true) {
     Object.values(panels).forEach((p) => {
       if (p && isOpen(p)) {
         p.classList.remove('is-open');
         p.setAttribute('aria-hidden', 'true');
       }
     });
-    closeRoadview();
+    /* closeRoadview(); */
+    if (shouldCloseRoadview) {
+      closeRoadview();
+    }
     pushSearch(false);
     syncActiveState(); // 🔹 둘 다 닫혔으니 active 제거
   }
@@ -300,16 +310,26 @@ export async function initSearch(map, clusterer) {
     }
   }
 
+  /*
   // 토글
   function toggle(panel) {
     if (!panel) return;
     if (isOpen(panel)) closePanel(panel);
     else openPanel(panel);
   }
+  */
+  function toggle(panel, keepRoadview = false) {
+    if (!panel) return;
+    if (isOpen(panel)) closePanel(panel);
+    else openPanel(panel, keepRoadview);
+  }
 
   // 이벤트 바인딩
   // ⭐ 롤백 시 제거
+  /*
   if (featureBtn) featureBtn.addEventListener('click', () => toggle(panels.feature));
+  */
+  if (featureBtn) featureBtn.addEventListener('click', () => toggle(panels.feature, true))
   // ⭐ 롤백 시 제거 - 주변 정보 패널 클릭 시 500m 버퍼 표시
   featureBtn?.addEventListener('click', () => {
       // 패널이 열리지 않은 상태에서 클릭하면 toggle → openPanel → is-open 상태됨
@@ -330,8 +350,10 @@ export async function initSearch(map, clusterer) {
     }, 50);
   });
 
-  
+  /*
   if (listBtn) listBtn.addEventListener('click', () => toggle(panels.list));
+  */
+  if (listBtn) listBtn.addEventListener('click', () => toggle(panels.list, true));
   if (guideBtn) guideBtn.addEventListener('click', () => toggle(panels.guide));
   if (searchBtn) searchBtn.addEventListener('click', closeAllPanels); // 🔍 누르면 닫기
 
