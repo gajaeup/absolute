@@ -22,6 +22,11 @@ import {
   initRegionSearch,
 } from './search.js';
 
+import {   // ⭐ 롤백 시 통째로 제거
+  drawBufferCircle, 
+  clearBufferCircle 
+} from './map.js';
+
 async function loadKakaoSDK() {
   let apiKey;
   const isLocal =
@@ -57,6 +62,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   const map = initMap();
   setMapInstance(map);
   initSearchTabs();
+  window.mapRef = map;   // ⭐ 롤백 시 제거
 
   // 1️⃣ 지도 초기화
   const clusterer = new kakao.maps.MarkerClusterer({
@@ -249,6 +255,13 @@ export async function initSearch(map, clusterer) {
     if (panel === panels.list) {
       closeRoadview();
     }
+    // // ⭐ 롤백 시 제거 - 주변 정보 패널 닫힐 때 지도 정리
+    if (panel === panels.feature) {
+      vehicleMarkers = clearMarkers(vehicleMarkers);
+      evMarkers = clearMarkers(evMarkers);
+
+      clearBufferCircle();
+    }
     if (!anyOpen()) pushSearch(false); // 둘 다 닫히면 검색창 원위치
     syncActiveState(); // 🔹 버튼 active 상태 반영
   }
@@ -288,7 +301,23 @@ export async function initSearch(map, clusterer) {
   }
 
   // 이벤트 바인딩
-  if (featureBtn) featureBtn.addEventListener('click', () => toggle(panels.feature));   // ⭐ 롤백 시 제거
+  // ⭐ 롤백 시 제거
+  if (featureBtn) featureBtn.addEventListener('click', () => toggle(panels.feature));
+  // ⭐ 롤백 시 제거 - 주변 정보 패널 클릭 시 500m 버퍼 표시
+  featureBtn?.addEventListener('click', () => {
+      // 패널이 열리지 않은 상태에서 클릭하면 toggle → openPanel → is-open 상태됨
+      setTimeout(() => {
+      if (!panels.feature.classList.contains('is-open')) return;
+      if (!window.selectedStation) return;
+
+      const { lat, lng } = window.selectedStation;
+
+      clearBufferCircle();
+      drawBufferCircle(lat, lng, 500);
+    }, 50);
+  });
+
+  
   if (listBtn) listBtn.addEventListener('click', () => toggle(panels.list));
   if (guideBtn) guideBtn.addEventListener('click', () => toggle(panels.guide));
   if (searchBtn) searchBtn.addEventListener('click', closeAllPanels); // 🔍 누르면 닫기
@@ -401,7 +430,14 @@ export async function initSearch(map, clusterer) {
     // 📋 목록 패널 열고, 검색창 오른쪽으로 밀기 + 버튼 active 처리
     openPanel(panel);
     showRoadview(station.lat, station.lng);
+    
+    // ⭐ 롤백 시 제거 - 주변정보 패널이 열려 있으면 500m 버퍼 다시 그림
+    if (panels.feature.classList.contains('is-open')) {
+      clearBufferCircle();
+      drawBufferCircle(station.lat, station.lng, 500);
+    }
   });
+
   function showRoadview(lat, lng) {
     const container = document.getElementById('floating-roadview');
     container.classList.remove('hidden');
@@ -598,45 +634,69 @@ document.getElementById("btn-admin-info")?.addEventListener("click", async () =>
 // =============================
 // 차량 기반시설 버튼 - ⭐ 롤백 시 제거
 // =============================
+let vehicleVisible = false;
+
 document.getElementById("btn-vehicle")?.addEventListener("click", async () => {
   if (!window.selectedStation) return alert("주유소를 먼저 선택하세요.");
+
+  if (vehicleVisible) {
+    vehicleMarkers = clearMarkers(vehicleMarkers);
+    vehicleVisible = false;
+    console.log("🚗 차량기반시설 마커 제거됨");
+    return;
+  }
 
   const station = window.selectedStation;
   const stationId =
     `${Math.round(station.lat * 1_000_000)}_${Math.round(station.lng * 1_000_000)}`;
 
   const data = await fetchVehicle(stationId);
-  if (!data) return;
+  if (!data) {
+    console.log("🚗 차량기반시설 API 실패");
+    return;
+  }
 
   // 기존 마커 제거
   vehicleMarkers = clearMarkers(vehicleMarkers);
 
-  data["정비소"].concat(data["세차장"], data["타이어"], data["카센터"]).forEach((item) => {
-    const mk = new kakao.maps.Marker({
-      map: window.mapRef,
-      position: new kakao.maps.LatLng(item.lat, item.lng),
+  data["정비소"].concat(data["세차장"], data["타이어"], data["카센터"])
+    .forEach((item) => {
+      const mk = new kakao.maps.Marker({
+        map: window.mapRef,
+        position: new kakao.maps.LatLng(item.lat, item.lng),
+      });
+      vehicleMarkers.push(mk);
     });
-    vehicleMarkers.push(mk);
-  });
 
-  alert(`총 ${data.total_count}개 차량기반시설 표시됨`);
+  vehicleVisible = true;
+  console.log(`🚗 차량기반시설 ${data.total_count}개 표시됨`);
 });
-
 
 // =============================
 // EV 충전소 버튼 - ⭐ 롤백 시 제거
 // =============================
+let evVisible = false;
+
 document.getElementById("btn-ev")?.addEventListener("click", async () => {
   if (!window.selectedStation) return alert("주유소를 먼저 선택하세요.");
+
+  if (evVisible) {
+    evMarkers = clearMarkers(evMarkers);
+    evVisible = false;
+    console.log("🔌 EV 충전소 마커 제거됨");
+    return;
+  }
 
   const station = window.selectedStation;
   const stationId =
     `${Math.round(station.lat * 1_000_000)}_${Math.round(station.lng * 1_000_000)}`;
 
   const data = await fetchEv(stationId);
-  if (!data) return;
+  if (!data) {
+    console.log("🔌 EV API 실패");
+    return;
+  }
 
-  // 기존 ev 마커 제거
   evMarkers = clearMarkers(evMarkers);
 
   data.items.forEach((item) => {
@@ -647,5 +707,6 @@ document.getElementById("btn-ev")?.addEventListener("click", async () => {
     evMarkers.push(mk);
   });
 
-  alert(`EV 충전소 ${data.count}개 표시됨`);
+  evVisible = true;
+  console.log(`🔌 EV 충전소 ${data.count}개 표시됨`);
 });
