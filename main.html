@@ -6,6 +6,18 @@
   <title>폐·휴업 주유소 클러스터 지도</title>
   <link rel="stylesheet" href="./public/main.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <style>
+    .info-nav a {
+      font-weight: 5;
+      letter-spacing: 0.25px;
+      font-stretch: 100%;
+    }
+    .info-nav ul {
+      display: flex;
+      gap: 100px;  /* 카테고리 사이 간격 조정 */
+    }
+  </style>
+
 </head>
 
 <body>
@@ -16,11 +28,17 @@
     <nav class="info-nav">
       <ul>
         <li>
-          <a href="background.html" data-info="background">구현 배경</a>
+          <a href="background.html" data-info="background" style="font-weight:440;">구현 배경</a>
         </li>
-        <li><a href="casestudy.html" data-info="cases">실제 사례</a></li>
-        <li><a href="faq.html" data-info="faq">FAQ</a></li>
-        <li><a href="datasource.html" data-info="data">데이터 출처</a></li>
+        <li>
+          <a href="casestudy.html" data-info="cases" style="font-weight:440;">실제 사례</a>
+        </li>
+        <li>
+          <a href="faq.html" data-info="faq" style="font-weight:440;">FAQ</a>
+        </li>
+        <li>
+          <a href="datasource.html" data-info="data" style="font-weight:440;">데이터 출처</a>
+        </li>
       </ul>
     </nav>
   </header>
