@@ -14,6 +14,7 @@ import {
   fetchVehicle,   // ⭐ 롤백 시 제거
   fetchEv,   // ⭐ 롤백 시 제거
   fetchAdminStats,   // ⭐ 롤백 시 제거
+  fetchLand,   // ⭐ 롤백 시 제거
 } from './api.js';
 import {
   switchSearchMode,
@@ -204,11 +205,13 @@ export async function initSearch(map, clusterer) {
   // 버튼 & 요소
   const listBtn = document.getElementById('nav-list-btn');
   const featureBtn = document.getElementById('nav-feature-btn');   // ⭐ 롤백 시 제거
+  const parcelBtn = document.getElementById('nav-parcel-btn');  // ⭐ 롤백 시 제거
   const guideBtn = document.getElementById('nav-guide-btn');
   const searchBtn = document.getElementById('nav-search-btn'); // 다른 아이콘 누르면 닫기용
   const panels = {
     list: document.getElementById('list-panel'),
     feature: document.getElementById('feature-panel'),  // ⭐ 롤백 시 제거
+    parcel: document.getElementById('parcel-panel'),  // ⭐ 롤백 시 제거
     guide: document.getElementById('guide-panel'),
   };
   const closeBtns = {
@@ -304,6 +307,10 @@ export async function initSearch(map, clusterer) {
       if (isOpen(panels.feature)) featureBtn.classList.add('active');
       else featureBtn.classList.remove('active');
     }
+    if (parcelBtn) {   // ⭐ 롤백 시 제거
+      if (isOpen(panels.parcel)) parcelBtn.classList.add('active');
+      else parcelBtn.classList.remove('active');
+    }
     if (guideBtn) {
       if (isOpen(panels.guide)) guideBtn.classList.add('active');
       else guideBtn.classList.remove('active');
@@ -325,12 +332,11 @@ export async function initSearch(map, clusterer) {
   }
 
   // 이벤트 바인딩
-  // ⭐ 롤백 시 제거
   /*
   if (featureBtn) featureBtn.addEventListener('click', () => toggle(panels.feature));
   */
+  // ⭐ 롤백 시 제거
   if (featureBtn) featureBtn.addEventListener('click', () => toggle(panels.feature, true))
-  // ⭐ 롤백 시 제거 - 주변 정보 패널 클릭 시 500m 버퍼 표시
   featureBtn?.addEventListener('click', () => {
       // 패널이 열리지 않은 상태에서 클릭하면 toggle → openPanel → is-open 상태됨
       setTimeout(() => {
@@ -348,6 +354,30 @@ export async function initSearch(map, clusterer) {
       window.mapRef.setLevel(4);   // 원하는 확대 레벨 (3~5가 적당)
       window.mapRef.panTo(pos);    // 지도를 해당 주유소로 이동
     }, 50);
+  });
+
+  // ⭐ 롤백 시 제거
+  if (parcelBtn) parcelBtn.addEventListener('click', () => toggle(panels.parcel, true));
+  parcelBtn?.addEventListener("click", async () => {
+    if (!window.selectedStation) {
+      const body = panels.parcel.querySelector(".side-panel__body");
+      body.innerHTML = `<p style="color:#666;">⚠ 주유소를 먼저 선택하세요.</p>`;
+      return;
+    }
+
+    const st = window.selectedStation;
+    const stationId =
+      `${Math.round(st.lat * 1_000_000)}_${Math.round(st.lng * 1_000_000)}`;
+
+    const data = await fetchLand(stationId);
+    const body = panels.parcel.querySelector(".side-panel__body");
+
+    if (!data) {
+      body.innerHTML = `<p style="color:#666;">⚠ 필지 정보를 불러올 수 없습니다.</p>`;
+      return;
+    }
+
+    body.innerHTML = renderLandInfo(data);
   });
 
   /*
@@ -646,6 +676,88 @@ function clearMarkers(arr) {
   return [];
 }
 
+// 필지 정보 렌더링 함수
+function renderLandInfo(data) {
+  const land = data.land_price;
+  const use = data.land_use;
+
+  let mainUse = "-";
+  if (use?.summary) {
+    const firstCat = Object.values(use.summary)[0];
+    if (firstCat && firstCat[0]) {
+      mainUse = firstCat[0].name || "-";
+    }
+  }
+
+  // 1) 개별공시지가 (그래프 제거해도 이 테이블은 유지)
+  const priceSection = `
+    <section class="land-section">
+      <h2 class="land-title">개별공시지가</h2>
+      <table class="plain-table-2col">
+        <tr><th>공시일자</th><th>공시가격</th></tr>
+        <tr>
+          <td>${land?.announce_date || "-"}</td>
+          <td>${land?.price_str || "-"}</td>
+        </tr>
+      </table>
+    </section>
+  `;
+
+  // 2) 필지 기본 정보
+  const landDetailsSection = `
+    <section class="land-section">
+      <h2 class="land-title">필지 기본 정보</h2>
+      <table class="plain-table-4col">
+        <tr>
+          <th>PNU</th>
+          <th>주소</th>
+          <th>대표 용도지역</th>
+          <th>분류</th>
+        </tr>
+        <tr>
+          <td>${data.pnu || "-"}</td>
+          <td>${data.clean_address || data.address || "-"}</td>
+          <td>${mainUse}</td>
+          <td>${land?.type || "-"}</td>
+        </tr>
+      </table>
+    </section>
+  `;
+
+  // 3) 토지이용계획
+  let useList = [];
+  if (use?.summary) {
+    for (const arr of Object.values(use.summary)) {
+      arr.forEach(u => {
+        useList.push(`${u.name}${u.data_date ? " (" + u.data_date + ")" : ""}`);
+      });
+    }
+  }
+
+  const landUseBox = `
+    <section class="land-section">
+      <h2 class="land-title">토지이용계획</h2>
+      <div class="plain-box">
+        ${useList.length ? useList.join(", ") : "-"}
+      </div>
+    </section>
+  `;
+
+  // 4) 안내문
+  const footer = `
+    <p class="land-notice">
+      ※ 본 서비스에서 제공하는 부동산행정자료는 단순 열람조회용이며 법적 효력은 없습니다.
+    </p>
+  `;
+
+  return `
+    ${priceSection}
+    ${landDetailsSection}
+    ${landUseBox}
+    ${footer}
+  `;
+}
+
 // =============================
 // 행정동 정보 버튼 - ⭐ 롤백 시 제거
 // =============================
@@ -766,3 +878,4 @@ document.getElementById("btn-ev")?.addEventListener("click", async () => {
   btnEv.classList.add("active");   // 상태 활성화
   console.log(`🔌 EV 충전소 ${data.count}개 표시됨`);
 });
+

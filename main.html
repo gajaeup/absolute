@@ -57,6 +57,10 @@
         <li id="nav-feature-btn" data-target="feature">
           <img src="/public/category.png" alt="주변정보" class="dashboard-icon"><span>주변 정보</span>
         </li>
+        <li id="nav-parcel-btn" data-target="parcel">
+          <img src="/public/category.png" alt="필지정보" class="dashboard-icon">
+          <span>필지 정보</span>
+        </li>
         <li id="nav-guide-btn" data-target="guide">
           <img src="/public/question.png" alt="도움말" class="help-icon"><span>도움말</span>
         </li>
@@ -89,6 +93,21 @@
       <button id="btn-ev" class="dash-btn">🔌 EV 충전소</button>
 
       <div id="dashboard-detail" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <!-- 필지 정보 패널 (새 패널) -->
+  <div id="parcel-panel" class="side-panel" aria-hidden="true">
+    <div class="side-panel__header">
+      <strong>필지 정보</strong>
+      <button type="button" id="parcel-panel-close" aria-label="닫기">×</button>
+    </div>
+
+    <div class="side-panel__body">
+      <!-- 여기는 빈 상태 유지 -->
+      <p style="color:#666; font-size:14px; margin-top:6px;">
+        주유소 선택 후 필지 정보를 확인할 수 있습니다.
+      </p>
     </div>
   </div>
 

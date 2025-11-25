@@ -715,3 +715,52 @@ main {
 #map-type-toggle button:hover {
   background: #e4e4e4;
 }
+
+/* ===== 필지 정보 테이블 ===== */
+.land-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #222;
+}
+
+.plain-table-2col,
+.plain-table-4col {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.plain-table-2col th,
+.plain-table-2col td,
+.plain-table-4col th,
+.plain-table-4col td {
+  border: 1px solid #dedede;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.plain-table-2col th,
+.plain-table-4col th {
+  background: #f5f5f5;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 토지이용 박스 */
+.plain-box {
+  border: 1px solid #ddd;
+  padding: 10px;
+  font-size: 13px;
+  color: #333;
+  line-height: 1.4;
+  background: #fafafa;
+}
+
+/* 안내문 */
+.land-notice {
+  margin-top: 14px;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
