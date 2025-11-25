@@ -474,14 +474,14 @@ export async function initSearch(map, clusterer) {
             <p class="station-detail__section-body is-muted" id="metrics-loading-text">
               지표를 불러오는 중입니다...
             </p>
-            <canvas id="metrics-chart"></canvas>
+              <canvas id="metrics-chart" style="margin-top: 6px;"></canvas>
             <div class="metrics-extra-charts">
               <canvas id="metrics-radar"></canvas>
             </div>
             <p class="metric-description" style="
-              font-size: 10px;
+              font-size: 11px;
               color: #666;
-              margin-top: 0px;
+              margin-top: -2px;
               line-height: 1.0;
             ">
               ※ 모든 지표는 해당 지점이 속한 <strong>권역 평균(17개 시·도)</strong>을 기준(0%)으로 한 
