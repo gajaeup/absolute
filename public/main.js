@@ -1044,7 +1044,7 @@ function drawLandCharts(data) {
           ? 0.5
           : (count - minVal) / (maxVal - minVal); // 0~1
 
-      const fontSize = 12 + t * 18; // 12~30px
+      const fontSize = 10 + t * 18; // 12~30px
       span.textContent = name;
       span.style.fontSize = fontSize + "px";
       span.style.margin = "4px 8px";
