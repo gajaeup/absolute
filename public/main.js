@@ -474,15 +474,21 @@ export async function initSearch(map, clusterer) {
             <p class="station-detail__section-body is-muted" id="metrics-loading-text">
               지표를 불러오는 중입니다...
             </p>
-            <!-- 기존 바차트: 절대 삭제하면 안 됨 -->
             <canvas id="metrics-chart"></canvas>
-            <!-- 새 추가 그래프 -->
             <div class="metrics-extra-charts">
               <canvas id="metrics-radar"></canvas>
             </div>
+            <p class="metric-description" style="
+              font-size: 10px;
+              color: #666;
+              margin-top: 0px;
+              line-height: 1.0;
+            ">
+              ※ 모든 지표는 해당 지점이 속한 <strong>권역 평균(17개 시·도)</strong>을 기준(0%)으로 한 
+              <strong>상대적 증감률(%)</strong>입니다.
+              </p>
           </div>
         </section>
-      
         <!-- 활용방안 소개 칸 -->
         <section class="station-detail__section">
           <h3 class="station-detail__section-title">추천 활용방안</h3>
@@ -1260,7 +1266,7 @@ document.getElementById("btn-vehicle")?.addEventListener("click", async () => {
         <div class="kpi-card">
           <div class="kpi-label">차량 기반시설</div>
           <div class="kpi-value">${totalCount}</div>
-          <div class="kpi-sublabel">반경 500m 내</div>
+          <div class="kpi-sublabel">행정동 중심 반경 500m 내</div>
         </div>
       </div>
       <div class="admin-chart-grid">
@@ -1357,7 +1363,7 @@ document.getElementById("btn-ev")?.addEventListener("click", async () => {
         <div class="kpi-card">
           <div class="kpi-label">EV 충전소</div>
           <div class="kpi-value">${data.count ?? (data.items?.length || 0)}</div>
-          <div class="kpi-sublabel">반경 500m 내</div>
+          <div class="kpi-sublabel">행정동 중심 반경 500m 내</div>
         </div>
       </div>
     `;

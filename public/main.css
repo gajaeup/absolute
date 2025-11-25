@@ -469,8 +469,8 @@ main {
   height: calc(100vh - 78px);
   background: #ffffff;
   border: 1px solid #e0e0e0;
-  border-radius: 4px;   /*==============수정: 모서리 각지게 변경==============*/
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);   /*==============수정: 그림자 더 연하게 변경==============*/
+  border-radius: 8px;   /*==============수정: 모서리 각지게 변경==============*/
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);   /*==============수정: 그림자 더 연하게 변경==============*/
   overflow: auto;
   z-index: 1000;
 
