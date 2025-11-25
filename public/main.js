@@ -378,6 +378,7 @@ export async function initSearch(map, clusterer) {
     }
 
     body.innerHTML = renderLandInfo(data);
+    drawLandCharts(data);
   });
 
   /*
@@ -467,15 +468,20 @@ export async function initSearch(map, clusterer) {
         <p class="station-detail__status">상태 : ${station.status} (${station.year} ~ )</p>\
         <!-- 지표 그래프 칸 (나중에 차트/지표값 들어갈 자리) -->
         <section class="station-detail__section">
-              <h3 class="station-detail__section-title">지표 요약</h3>
-              ${renderMetricsText(stats)}
-              <div class="station-detail__metrics" id="station-metrics">
-                <p class="station-detail__section-body is-muted" id="metrics-loading-text">
-                  지표를 불러오는 중입니다...
-                </p>
-                <canvas id="metrics-chart"></canvas>
-              </div>
-            </section>
+          <h3 class="station-detail__section-title">지표 요약</h3>
+          ${renderMetricsText(stats)}
+          <div class="station-detail__metrics" id="station-metrics">
+            <p class="station-detail__section-body is-muted" id="metrics-loading-text">
+              지표를 불러오는 중입니다...
+            </p>
+            <!-- 기존 바차트: 절대 삭제하면 안 됨 -->
+            <canvas id="metrics-chart"></canvas>
+            <!-- 새 추가 그래프 -->
+            <div class="metrics-extra-charts">
+              <canvas id="metrics-radar"></canvas>
+            </div>
+          </div>
+        </section>
       
         <!-- 활용방안 소개 칸 -->
         <section class="station-detail__section">
@@ -601,14 +607,19 @@ function renderMetricsText(stats) {
 }
 
 // 통계 차트 함수 (relative 기반, 단위 %)
+// 통계 차트 함수 (relative 기반, 단위 % + radar + scatter)
 function drawStatsChart(stats) {
   if (!stats || !stats.relative) return;
 
-  const ctx = document.getElementById('metrics-chart');
-  if (!ctx) return;
+  const barCtx = document.getElementById('metrics-chart');
+  const radarCtx = document.getElementById('metrics-radar');
+  const scatterCtx = document.getElementById('parcel-scatter');
 
   const loadingText = document.getElementById('metrics-loading-text');
   if (loadingText) loadingText.remove();
+
+  if (!barCtx && !radarCtx && !scatterCtx) return;
+  if (typeof Chart === 'undefined') return;
 
   const labelMap = {
     traffic: '일교통량(AADT)',
@@ -623,60 +634,108 @@ function drawStatsChart(stats) {
   const labels = keys.map((k) => labelMap[k] || k);
   const relValues = keys.map((k) => stats.relative[k]);
 
-  if (window.statsChartInstance) {
-    window.statsChartInstance.destroy();
+  // 👉 Radar용 값: relative 그대로 사용 (0% 기준)
+  const radarLabels = labels;
+  const radarValues = relValues;
+
+  // 👉 Scatter용 값: parcel_300m vs parcel_500m
+  const m = stats.metrics || {};
+  const p300 = m.parcel_300m ?? null;
+  const p500 = m.parcel_500m ?? null;
+
+  // 🔹 1) Bar Chart (relative)
+  if (barCtx) {
+    if (window.statsBarChartInstance) {
+      window.statsBarChartInstance.destroy();
+    }
+    window.statsBarChartInstance = new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: '지역 평균 대비 상대값(%)',
+            data: relValues,
+          },
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.raw.toFixed(1)} %`,
+            },
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: '% (권역 평균 대비 증감률)',
+            },
+          },
+        },
+      },
+    });
   }
 
-  window.statsChartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: '지역 평균 대비 상대값(%)',
-          data: relValues,
-          backgroundColor: relValues.map((v) =>
-            v >= 0 ? 'rgba(54, 162, 235, 0.75)' : 'rgba(250, 99, 132, 0.75)'
-          ),
-          borderColor: relValues.map((v) =>
-            v >= 0 ? '#2F80ED' : '#EB5757'
-          ),
-          borderWidth: 1.5,
+  // 🔹 2) Radar Chart
+  if (radarCtx) {
+    if (window.statsRadarChartInstance) {
+      window.statsRadarChartInstance.destroy();
+    }
+    window.statsRadarChartInstance = new Chart(radarCtx, {
+      type: 'radar',
+      data: {
+        labels: radarLabels,
+        datasets: [
+          {
+            label: '지표 프로필',
+            data: radarValues,
+          },
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
         },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => `${ctx.raw.toFixed(1)} %`,
+        scales: {
+          r: {
+            beginAtZero: true,
+            angleLines: { display: true },
+            suggestedMin: Math.min(...radarValues, 0),
+            suggestedMax: Math.max(...radarValues, 0),
           },
         },
       },
-      scales: {
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: '% (권역 평균 대비 증감률)',
-          },
-        },
-      },
-    },
-  });
+    });
+  }
 }
 
 let vehicleMarkers = [];
 let evMarkers = [];
 
+// 🔥 Heatmap(유사)용 원형 오버레이
+let vehicleHeatOverlays = [];
+let evHeatOverlays = [];
+
+// 공통 마커/오버레이 제거 유틸
 function clearMarkers(arr) {
   arr.forEach((m) => m.setMap(null));
   return [];
 }
+function clearOverlays(arr) {
+  arr.forEach((o) => o.setMap(null));
+  return [];
+}
 
-// 필지 정보 렌더링 함수
+// =============================
+// 필지 정보 렌더링 + 차트
+// =============================
 function renderLandInfo(data) {
   const land = data.land_price;
   const use = data.land_use;
@@ -689,7 +748,7 @@ function renderLandInfo(data) {
     }
   }
 
-  // 1) 개별공시지가 (그래프 제거해도 이 테이블은 유지)
+  // 1) 개별공시지가 섹션 (그래프 영역 포함)
   const priceSection = `
     <section class="land-section">
       <h2 class="land-title">개별공시지가</h2>
@@ -700,6 +759,19 @@ function renderLandInfo(data) {
           <td>${land?.price_str || "-"}</td>
         </tr>
       </table>
+
+      <!-- 📊 공시지가 차트들 -->
+      <div class="land-chart-grid">
+        <div class="land-chart-item">
+          <h3 class="land-chart-subtitle">공시지가</h3>
+          <canvas id="land-price-bar"></canvas>
+        </div>
+        <div class="land-chart-item">
+          <h3 class="land-chart-subtitle">권역 평균과 비교</h3>
+          <canvas id="land-price-compare"></canvas>
+          <p id="land-price-compare-msg" class="land-chart-msg"></p>
+        </div>
+      </div>
     </section>
   `;
 
@@ -721,14 +793,17 @@ function renderLandInfo(data) {
           <td>${land?.type || "-"}</td>
         </tr>
       </table>
+      <div class="land-usage-text-card">
+        <p><strong>이 필지는</strong> <span class="land-usage-highlight">${mainUse}</span>에 속하는 필지입니다.</p>
+      </div>
     </section>
   `;
 
-  // 3) 토지이용계획
+  // 3) 토지이용계획 + 도넛 / 바 차트 / 워드클라우드
   let useList = [];
   if (use?.summary) {
     for (const arr of Object.values(use.summary)) {
-      arr.forEach(u => {
+      arr.forEach((u) => {
         useList.push(`${u.name}${u.data_date ? " (" + u.data_date + ")" : ""}`);
       });
     }
@@ -737,13 +812,21 @@ function renderLandInfo(data) {
   const landUseBox = `
     <section class="land-section">
       <h2 class="land-title">토지이용계획</h2>
-      <div class="plain-box">
+      <div class="plain-box" id="land-use-text">
         ${useList.length ? useList.join(", ") : "-"}
       </div>
+
+      <div class="land-chart-grid">
+        <div class="land-chart-item">
+          <h3 class="land-chart-subtitle">용도지역 구성</h3>
+          <canvas id="land-usage-donut"></canvas>
+        </div>
+      </div>
+
+      <div class="land-wordcloud" id="land-wordcloud"></div>
     </section>
   `;
 
-  // 4) 안내문
   const footer = `
     <p class="land-notice">
       ※ 본 서비스에서 제공하는 부동산행정자료는 단순 열람조회용이며 법적 효력은 없습니다.
@@ -758,8 +841,216 @@ function renderLandInfo(data) {
   `;
 }
 
+// 숫자형 가격 추출 유틸
+function extractPriceNumeric(land) {
+  if (!land) return null;
+  if (typeof land.price === "number") return land.price;
+  if (land.price && !Number.isNaN(Number(land.price))) return Number(land.price);
+  if (land.price_str) {
+    const n = Number(String(land.price_str).replace(/[^\d]/g, ""));
+    return Number.isNaN(n) ? null : n;
+  }
+  return null;
+}
+
+// 필지 차트 생성
+function drawLandCharts(data) {
+  const land = data.land_price || {};
+  const use = data.land_use || {};
+  const price = extractPriceNumeric(land);
+
+  // 1) 공시지가 바 차트
+  const priceCtx = document.getElementById("land-price-bar");
+  if (priceCtx && typeof Chart !== "undefined" && price != null) {
+    if (window.landPriceChart) window.landPriceChart.destroy();
+    window.landPriceChart = new Chart(priceCtx, {
+      type: "bar",
+      data: {
+        labels: ["이 필지"],
+        datasets: [
+          {
+            label: "공시지가",
+            data: [price],
+            borderWidth: 1.5,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) =>
+                ctx.raw ? ctx.raw.toLocaleString() + " 원/㎡" : "-",
+            },
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+  }
+
+  // 2) 공시지가 vs 지역 평균 비교 차트
+  const compareCtx = document.getElementById("land-price-compare");
+  const compareMsg = document.getElementById("land-price-compare-msg");
+  let regionAvg =
+    land.region_avg_price ||
+    land.region_avg ||
+    land.avg_price ||
+    null;
+  if (typeof regionAvg === "string") {
+    const n = Number(regionAvg.replace(/[^\d]/g, ""));
+    if (!Number.isNaN(n)) regionAvg = n;
+  }
+
+  if (compareCtx && typeof Chart !== "undefined" && price != null) {
+    if (window.landPriceCompareChart) window.landPriceCompareChart.destroy();
+
+    if (regionAvg != null) {
+      if (compareMsg) compareMsg.textContent = "";
+      window.landPriceCompareChart = new Chart(compareCtx, {
+        type: "bar",
+        data: {
+          labels: ["이 필지", "행정동 평균"],
+          datasets: [
+            {
+              label: "공시지가 비교",
+              data: [price, regionAvg],
+              borderWidth: 1.5,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) =>
+                  ctx.raw ? ctx.raw.toLocaleString() + " 원/㎡" : "-",
+              },
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    } else {
+      if (compareMsg) {
+        compareMsg.textContent = "※ 지역 평균 공시지가 정보가 없어 비교 차트는 단일 값만 표시됩니다.";
+      }
+    }
+  }
+
+  // 3) 용도지역 도넛 차트
+  const usageDonutCtx = document.getElementById("land-usage-donut");
+  if (usageDonutCtx && typeof Chart !== "undefined" && use.summary) {
+
+    // '용도지역' 또는 가장 유사한 key 자동 탐색
+    let usageRegion =
+      use.summary["용도지역"] ||
+      use.summary["지역지구"] ||
+      use.summary["도시지역"] ||
+      null;
+
+    // 용도지역이 없다면 전체 summary 중 name 속성 가진 항목들을 모아서 대체
+    if (!usageRegion) {
+      const all = [];
+      Object.values(use.summary).forEach(arr => {
+        arr.forEach(u => {
+          if (u.name) all.push(u);
+        });
+      });
+      usageRegion = all;
+    }
+
+    const nameCount = {};
+    usageRegion.forEach((u) => {
+      const key = u.name || "기타";
+      nameCount[key] = (nameCount[key] || 0) + 1;
+    });
+
+    const labels = Object.keys(nameCount);
+    const values = Object.values(nameCount);
+
+    if (window.landUsageDonutChart) window.landUsageDonutChart.destroy();
+    if (labels.length > 0) {
+      window.landUsageDonutChart = new Chart(usageDonutCtx, {
+        type: "doughnut",
+        data: {
+          labels,
+          datasets: [
+          {
+            data: values,
+            backgroundColor: [
+              '#2563EB',   // 공공 파랑
+              '#10B981',   // 공공 그린
+              '#6B7280',   // 중성 회색
+              '#9CA3AF',   // 연회색
+            ],
+          },
+          ]
+        },
+        options: {
+          responsive: true,
+            plugins: {
+            legend: { position: "bottom" },
+          },
+        },
+      });
+    }
+  }
+
+  // 4) 토지이용 Word cloud (간단 태그 클라우드)
+  const wcEl = document.getElementById("land-wordcloud");
+  if (wcEl && use.summary) {
+    wcEl.innerHTML = "";
+
+    const freq = {};
+    Object.values(use.summary).forEach((arr) => {
+      arr.forEach((u) => {
+        const key = u.name || "기타";
+        freq[key] = (freq[key] || 0) + 1;
+      });
+    });
+
+    const entries = Object.entries(freq);
+    if (entries.length === 0) {
+      wcEl.textContent = "표시할 토지이용 항목이 없습니다.";
+      return;
+    }
+
+    const maxVal = Math.max(...entries.map(([, v]) => v));
+    const minVal = Math.min(...entries.map(([, v]) => v));
+
+    entries.forEach(([name, count]) => {
+      const span = document.createElement("span");
+      const t =
+        maxVal === minVal
+          ? 0.5
+          : (count - minVal) / (maxVal - minVal); // 0~1
+
+      const fontSize = 12 + t * 18; // 12~30px
+      span.textContent = name;
+      span.style.fontSize = fontSize + "px";
+      span.style.margin = "4px 8px";
+      span.style.display = "inline-block";
+      span.style.opacity = 0.7 + t * 0.3;
+      wcEl.appendChild(span);
+    });
+  }
+}
+
 // =============================
-// 행정동 정보 버튼 - ⭐ 롤백 시 제거
+// 행정동 정보 버튼 (KPI + Radar + Donut)
 // =============================
 document.getElementById("btn-admin-info")?.addEventListener("click", async () => {
   if (!window.selectedStation) {
@@ -776,24 +1067,124 @@ document.getElementById("btn-admin-info")?.addEventListener("click", async () =>
   const box = document.getElementById("dashboard-detail");
   if (!box) return;
 
+  const metrics = {
+    population: data.population ?? 0,
+    traffic: data.traffic ?? 0,
+    commercial_density: data.commercial_density ?? 0,
+    tourism: data.tourism ?? 0,
+  };
+
   box.innerHTML = `
-    <div class="dash-info-box" style="
-      padding:12px;border:1px solid #ddd;border-radius:8px;margin-top:10px;
-      background:#fafafa;font-size:14px;line-height:1.5;
-    ">
-      <div><b>행정동:</b> ${data.region ?? '-'}</div>
-      <div><b>인구:</b> ${data.population ?? '-'}</div>
-      <div><b>교통량:</b> ${data.traffic ?? '-'}</div>
-      <div><b>상권 밀집도:</b> ${data.commercial_density ?? '-'}</div>
-      <div><b>관광지수:</b> ${data.tourism ?? '-'}</div>
+    <!-- KPI 카드 -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">인구</div>
+        <div class="kpi-value">${metrics.population?.toLocaleString?.() ?? "-"}</div>
+        <div class="kpi-sublabel">${data.region || "행정동"}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">교통량</div>
+        <div class="kpi-value">${metrics.traffic?.toLocaleString?.() ?? "-"}</div>
+        <div class="kpi-sublabel">일평균 통행량(AADT)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">상권 밀집도</div>
+        <div class="kpi-value">${metrics.commercial_density ?? "-"}</div>
+        <div class="kpi-sublabel">상대 지표</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">관광지수</div>
+        <div class="kpi-value">${metrics.tourism ?? "-"}</div>
+        <div class="kpi-sublabel">행정동 단위</div>
+      </div>
+    </div>
+
+    <!-- 레이더 & 도넛 -->
+    <div class="admin-chart-grid">
+      <div class="admin-chart-item">
+        <h3 class="admin-chart-title">행정동 프로필</h3>
+        <canvas id="admin-radar"></canvas>
+      </div>
+      <div class="admin-chart-item">
+        <h3 class="admin-chart-title">지표 비중</h3>
+        <canvas id="admin-donut"></canvas>
+      </div>
     </div>
   `;
   box.style.display = "block";
+
+  drawAdminCharts(metrics, data.region || "행정동");
 });
 
+function drawAdminCharts(metrics, regionLabel) {
+  const radarCtx = document.getElementById("admin-radar");
+  const donutCtx = document.getElementById("admin-donut");
+  if (typeof Chart === "undefined") return;
+
+  const labels = ["인구", "교통량", "상권 밀집도", "관광지수"];
+  const values = [
+    metrics.population || 0,
+    metrics.traffic || 0,
+    metrics.commercial_density || 0,
+    metrics.tourism || 0,
+  ];
+
+  // 값 스케일이 너무 크니 정규화(0~1)
+  const maxVal = Math.max(...values.map((v) => (v || 0))) || 1;
+  const normValues = values.map((v) => (v || 0) / maxVal);
+
+  // Radar
+  if (radarCtx) {
+    if (window.adminRadarChart) window.adminRadarChart.destroy();
+    window.adminRadarChart = new Chart(radarCtx, {
+      type: "radar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: regionLabel,
+            data: normValues,
+          },
+        ],
+      },
+      options: {
+        scales: {
+          r: {
+            beginAtZero: true,
+            max: 1,
+          },
+        },
+        plugins: {
+          legend: { display: false },
+        },
+      },
+    });
+  }
+
+  // Donut
+  if (donutCtx) {
+    if (window.adminDonutChart) window.adminDonutChart.destroy();
+    window.adminDonutChart = new Chart(donutCtx, {
+      type: "doughnut",
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values.map((v) => (v || 0) <= 0 ? 0.1 : v),
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          legend: { position: "bottom" },
+        },
+      },
+    });
+  }
+}
 
 // =============================
-// 차량 기반시설 버튼 - ⭐ 롤백 시 제거
+// 차량 기반시설 버튼 (Heatmap + Donut)
 // =============================
 let vehicleVisible = false;
 
@@ -803,11 +1194,16 @@ const btnEv = document.getElementById("btn-ev");
 document.getElementById("btn-vehicle")?.addEventListener("click", async () => {
   if (!window.selectedStation) return alert("주유소를 먼저 선택하세요.");
 
+  const box = document.getElementById("dashboard-detail");
+
+  // 토글 OFF
   if (vehicleVisible) {
     vehicleMarkers = clearMarkers(vehicleMarkers);
+    vehicleHeatOverlays = clearOverlays(vehicleHeatOverlays);
     vehicleVisible = false;
-    btnVehicle.classList.remove("active");   // 버튼 상태 해제
-    console.log("🚗 차량기반시설 마커 제거됨");
+    btnVehicle.classList.remove("active");
+    if (box && !evVisible) box.innerHTML = "";
+    console.log("🚗 차량기반시설 마커/히트맵 제거됨");
     return;
   }
 
@@ -821,36 +1217,103 @@ document.getElementById("btn-vehicle")?.addEventListener("click", async () => {
     return;
   }
 
-  // 기존 마커 제거
+  // 기존 마커/heatmap 제거
   vehicleMarkers = clearMarkers(vehicleMarkers);
+  vehicleHeatOverlays = clearOverlays(vehicleHeatOverlays);
 
-  data["정비소"].concat(data["세차장"], data["타이어"], data["카센터"])
-    .forEach((item) => {
+  const categories = ["정비소", "세차장", "타이어", "카센터"];
+  const counts = {};
+
+  categories.forEach((cat) => {
+    const arr = data[cat] || [];
+    counts[cat] = arr.length;
+
+    arr.forEach((item) => {
+      // 지도 마커
       const mk = new kakao.maps.Marker({
         map: window.mapRef,
         position: new kakao.maps.LatLng(item.lat, item.lng),
       });
       vehicleMarkers.push(mk);
+
+      // 간단 Heatmap: 반투명 원
+      const circle = new kakao.maps.Circle({
+        center: new kakao.maps.LatLng(item.lat, item.lng),
+        radius: 120,
+        strokeWeight: 0,
+        fillColor: "#FF5722",
+        fillOpacity: 0.15,
+      });
+      circle.setMap(window.mapRef);
+      vehicleHeatOverlays.push(circle);
     });
+  });
 
   vehicleVisible = true;
-  btnVehicle.classList.add("active");   // 버튼 상태 활성화
-  console.log(`🚗 차량기반시설 ${data.total_count}개 표시됨`);
+  btnVehicle.classList.add("active");
+
+  // 우측 패널 내용 채우기
+  if (box) {
+    const totalCount = Object.values(counts).reduce((a, b) => a + b, 0);
+    box.innerHTML = `
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">차량 기반시설</div>
+          <div class="kpi-value">${totalCount}</div>
+          <div class="kpi-sublabel">반경 500m 내</div>
+        </div>
+      </div>
+      <div class="admin-chart-grid">
+        <div class="admin-chart-item">
+          <h3 class="admin-chart-title">시설 구성 비율</h3>
+          <canvas id="vehicle-donut"></canvas>
+        </div>
+      </div>
+    `;
+
+    const donutCtx = document.getElementById("vehicle-donut");
+    if (donutCtx && typeof Chart !== "undefined") {
+      if (window.vehicleDonutChart) window.vehicleDonutChart.destroy();
+      window.vehicleDonutChart = new Chart(donutCtx, {
+        type: "doughnut",
+        data: {
+          labels: Object.keys(counts),
+          datasets: [
+            {
+              data: Object.values(counts),
+            },
+          ],
+        },
+        options: {
+          plugins: {
+            legend: { position: "bottom" },
+          },
+        },
+      });
+    }
+  }
+
+  console.log(`🚗 차량기반시설 ${data.total_count || ""}개 표시됨`);
 });
 
 // =============================
-// EV 충전소 버튼 - ⭐ 롤백 시 제거
+// EV 충전소 버튼 (Heatmap)
 // =============================
 let evVisible = false;
 
 document.getElementById("btn-ev")?.addEventListener("click", async () => {
   if (!window.selectedStation) return alert("주유소를 먼저 선택하세요.");
 
+  const box = document.getElementById("dashboard-detail");
+
+  // 토글 OFF
   if (evVisible) {
     evMarkers = clearMarkers(evMarkers);
+    evHeatOverlays = clearOverlays(evHeatOverlays);
     evVisible = false;
-    btnEv.classList.remove("active");   // 상태 삭제
-    console.log("🔌 EV 충전소 마커 제거됨");
+    btnEv.classList.remove("active");
+    if (box && !vehicleVisible) box.innerHTML = "";
+    console.log("🔌 EV 충전소 마커/히트맵 제거됨");
     return;
   }
 
@@ -865,17 +1328,41 @@ document.getElementById("btn-ev")?.addEventListener("click", async () => {
   }
 
   evMarkers = clearMarkers(evMarkers);
+  evHeatOverlays = clearOverlays(evHeatOverlays);
 
-  data.items.forEach((item) => {
+  (data.items || []).forEach((item) => {
     const mk = new kakao.maps.Marker({
       map: window.mapRef,
       position: new kakao.maps.LatLng(item.lat, item.lng),
     });
     evMarkers.push(mk);
+
+    const circle = new kakao.maps.Circle({
+      center: new kakao.maps.LatLng(item.lat, item.lng),
+      radius: 120,
+      strokeWeight: 0,
+      fillColor: "#1E88E5",
+      fillOpacity: 0.18,
+    });
+    circle.setMap(window.mapRef);
+    evHeatOverlays.push(circle);
   });
 
   evVisible = true;
-  btnEv.classList.add("active");   // 상태 활성화
-  console.log(`🔌 EV 충전소 ${data.count}개 표시됨`);
+  btnEv.classList.add("active");
+
+  if (box) {
+    box.innerHTML = `
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">EV 충전소</div>
+          <div class="kpi-value">${data.count ?? (data.items?.length || 0)}</div>
+          <div class="kpi-sublabel">반경 500m 내</div>
+        </div>
+      </div>
+    `;
+  }
+
+  console.log(`🔌 EV 충전소 ${data.count || data.items?.length || 0}개 표시됨`);
 });
 

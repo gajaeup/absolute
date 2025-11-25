@@ -469,8 +469,8 @@ main {
   height: calc(100vh - 78px);
   background: #ffffff;
   border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  border-radius: 4px;   /*==============수정: 모서리 각지게 변경==============*/
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);   /*==============수정: 그림자 더 연하게 변경==============*/
   overflow: auto;
   z-index: 1000;
 
@@ -641,6 +641,8 @@ main {
   /* 호버 시 좀 더 진하게 */
 }
 
+
+/* 주유소 상세 카드 섹션 */
 .station-detail__section {
   margin-top: 14px;
   padding-top: 12px;
@@ -668,7 +670,7 @@ main {
 .station-detail__metrics {
   margin-top: 4px;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: 3px;
   background: #f8fafc;
   border: 1px dashed #cbd5e1;
 }
@@ -766,4 +768,109 @@ main {
   font-size: 12px;
   color: #666;
   line-height: 1.4;
+}
+
+/* ===== KPI 카드 ===== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.kpi-card {
+  background: #ffffff;
+  border-radius: 2px;
+  border: 1px solid #dcdcdc;
+  box-shadow: none;
+}
+.kpi-label {
+  font-size: 13px;
+  color: #444;
+}
+.kpi-value {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.kpi-sublabel {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+}
+
+/* ===== 주변 정보 / 대시보드 차트 레이아웃 ===== */
+.admin-chart-grid,
+.metrics-chart-grid,
+.land-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.metrics-chart-item,
+.admin-chart-item,
+.land-chart-item {
+  border-radius: 2px;
+  border: 1px solid #dddddd;
+  box-shadow: none;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.admin-chart-title,
+.land-chart-subtitle {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+}
+
+.metrics-chart-item--full {
+  grid-column: 1 / -1;
+}
+
+/* ===== 필지 정보 워드클라우드 ===== */
+.land-wordcloud {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #f5f5f5;
+  min-height: 60px;
+}
+
+.land-chart-msg {
+  font-size: 11px;
+  color: #777;
+  margin-top: 4px;
+}
+
+/* 필지 용도 텍스트 카드 */
+.land-usage-text-card {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f9fafb;
+  border: 1px solid #e0e0e0;
+  font-size: 13px;
+}
+
+.land-usage-highlight {
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+/* ===== 주유소 상세 - 주요 지표 ===== */
+.metric-row {
+  background: #f8f8f8 !important;
+  border-radius: 4px !important;
+  border: 1px solid #e0e0e0 !important;
+}
+.metric-label {
+  font-weight: 500 !important;
+  color: #222 !important;
+}
+.metric-value {
+  color: #333 !important;
 }
