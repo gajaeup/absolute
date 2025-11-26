@@ -70,9 +70,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     map,
     averageCenter: true,
     minLevel: 1,
-    minClusterSize: 15,
+    minClusterSize: 20,
     disableClickZoom: false,
-    gridSize: 80,
+    gridSize: 100,
     styles: [{
         width: '40px',        // 원의 너비
         height: '40px',       // 원의 높이
@@ -113,13 +113,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     const level = map.getLevel();
 
     // 조건 1: -> 개수 상관없이 무조건 클러스터링 (Size 1)
-    if (level <= 14) {
-      clusterer.setMinClusterSize(15);
+    if (level <= 9) {
+      clusterer.setMinClusterSize(50);
       clusterer.setGridSize(80);
     } 
     // 조건 2: -> 20개 이상 뭉쳐야만 클러스터링 (Size 20)
     else {
-      clusterer.setMinClusterSize(16);
+      clusterer.setMinClusterSize(20);
     }
     
     // 변경된 설정 적용을 위해 다시 그리기
