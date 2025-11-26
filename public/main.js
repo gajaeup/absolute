@@ -68,11 +68,62 @@ window.addEventListener('DOMContentLoaded', async () => {
   const clusterer = new kakao.maps.MarkerClusterer({
     map,
     averageCenter: true,
-    minLevel: 10,
-    minClusterSize: 10,
+    minLevel: 1,
+    minClusterSize: 15,
     disableClickZoom: false,
+    gridSize: 80,
+    styles: [{
+        width: '40px',        // 원의 너비
+        height: '40px',       // 원의 높이
+        background: '#90bbb2', // ★ 원하는 단색 컬러 코드
+        borderRadius: '50%',  // 원형으로 만들기
+        color: '#fff',        // 글자 색상 (검정)
+        textAlign: 'center',  // 글자 정렬
+        lineHeight: '40px',   // 글자 수직 중앙 정렬 (height와 같게 설정)
+        fontWeight: 'normal',   // 글자 굵기
+        opacity: '0.8'        // (선택사항) 약간 투명하게
+    },
+      {
+        width: '50px',        // 원의 너비
+        height: '50px',       // 원의 높이
+        background: '#438f82', // ★ 원하는 단색 컬러 코드
+        borderRadius: '50%',  // 원형으로 만들기
+        color: '#fff',        // 글자 색상
+        textAlign: 'center',  // 글자 정렬
+        lineHeight: '50px',   // 글자 수직 중앙 정렬 (height와 같게 설정)
+        fontWeight: 'normal',   // 글자 굵기
+        opacity: '0.8'        // (선택사항) 약간 투명하게
+      },
+      {
+        width: '60px',        // 원의 너비
+        height: '60px',       // 원의 높이
+        background: '#00796b', // ★ 원하는 단색 컬러 코드
+        borderRadius: '50%',  // 원형으로 만들기
+        color: '#fff',        // 글자 색상
+        textAlign: 'center',  // 글자 정렬
+        lineHeight: '60px',   // 글자 수직 중앙 정렬 (height와 같게 설정)
+        fontWeight: 'normal',   // 글자 굵기
+        opacity: '0.8'        // 약간 투명하게
+    }
+    ]
   });
   window.clustererRef = clusterer;
+  kakao.maps.event.addListener(map, 'zoom_changed', () => {
+    const level = map.getLevel();
+
+    // 조건 1: -> 개수 상관없이 무조건 클러스터링 (Size 1)
+    if (level <= 14) {
+      clusterer.setMinClusterSize(15);
+      clusterer.setGridSize(80);
+    } 
+    // 조건 2: -> 20개 이상 뭉쳐야만 클러스터링 (Size 20)
+    else {
+      clusterer.setMinClusterSize(16);
+    }
+    
+    // 변경된 설정 적용을 위해 다시 그리기
+    clusterer.redraw();
+  });
   const geoSources = {
     sido: '/public/ctprvn_wgs84.json',
     sig: '/public/sig_wgs84_simplified.json',

@@ -48,7 +48,7 @@ export function drawMarkers(map, clusterer, stations) {
     if (isNaN(lat) || isNaN(lng)) return; // 좌표 없으면 스킵
 
         // ✅ 마커 이미지
-    const imageSrc ="/public/marker.png";
+    const imageSrc ="/public/marker_green.png";
     const imageSize = new kakao.maps.Size(20, 28);
     const imageOption = { offset: new kakao.maps.Point(15, 28) };
     const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
