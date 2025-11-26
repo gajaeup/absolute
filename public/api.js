@@ -96,3 +96,9 @@ export async function fetchAdminStats(stationId) {
   return await res.json();
 }
 
+// 필지 정보 API
+export async function fetchLand(stationId) {
+  const res = await fetch(`${API_BASE}/api/stations/${stationId}/land`);
+  if (!res.ok) return null;
+  return await res.json();
+}
