@@ -70,9 +70,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     map,
     averageCenter: true,
     minLevel: 1,
-    minClusterSize: 20,
+    minClusterSize: 30,
     disableClickZoom: false,
-    gridSize: 100,
+    gridSize: 110,
     styles: [{
         width: '40px',        // 원의 너비
         height: '40px',       // 원의 높이
@@ -317,11 +317,12 @@ export async function initSearch(map, clusterer) {
     if (!panel) return;
     panel.classList.remove('is-open');
     panel.setAttribute('aria-hidden', 'true');
-    /*
-    if (panel === panels.list) {
-      closeRoadview();
-    }
-      */
+
+    closeRoadview();
+
+    resetHighlight(window.clustererRef);
+
+    
     // ⭐ 롤백 시 제거 - 주변 정보 패널 닫힐 때 지도 정리
     if (panel === panels.feature) {
       vehicleMarkers = clearMarkers(vehicleMarkers);
@@ -492,15 +493,12 @@ export async function initSearch(map, clusterer) {
     const stationId = `${Math.round(station.lat * 1_000_000)}_${Math.round(
       station.lng * 1_000_000
     )}`;
-    console.log('📌 추천 요청 ID:', stationId);
 
     // 2) 추천 API 호출
     const recData = await fetchRecommendation(stationId);
-    console.log('📌 추천 결과:', recData);
 
     // 3) 통계 API 호출
     const stats = await fetchStats(stationId);
-    console.log('📊 통계 결과:', stats);
 
     const body = panel.querySelector('.side-panel__body');
     if (body) {
