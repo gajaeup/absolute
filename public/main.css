@@ -218,14 +218,38 @@ main {
   left: 100px;
   background: #ffffff;
   border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
-  padding: 10px 14px;
-  width: 270px;
+  padding: 14px 20px;
+  width: 280px;
   font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
   z-index: 1000;
   transition: all 0.3s ease;
+  overflow: visible !important;
 }
 
+.search-close-btn {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  z-index: 30;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.search-close-btn:hover {
+  color: #333;
+}
+
+.search-container.hidden {
+  transform: translateX(-120%);
+  /* 완전히 안 보이게 이동 */
+  opacity: 0;
+  pointer-events: none;
+}
 /* ===== 상단 탭 ===== */
 .search-tabs {
   display: flex;
@@ -276,11 +300,10 @@ main {
 }
 
 #search-button {
-  background: #00796b;
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 5px;
+  border-radius: 5px;
+  padding: 8px 10px;
   cursor: pointer;
   font-size: 14px;
   transition: 0.2s;

@@ -249,7 +249,34 @@ export async function initSearch(map, clusterer) {
   /*kakao.maps.event.addListener(map, 'click', () => {
       resetHighlight(clusterer);
   });*/
+  const searchContainer = document.querySelector('.search-container');
+  const closeBtn = document.getElementById('search-close-btn'); // 새로 만든 닫기 버튼
+  const navSearchBtn = document.getElementById('nav-search-btn'); // 왼쪽 사이드바 검색 버튼
 
+  // 1️⃣ [닫기] X 버튼 누르면 검색창 숨기기
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      searchContainer.classList.add('hidden');
+      
+      // (선택사항) 사이드바의 검색 버튼 활성화 상태도 끄기
+      if (navSearchBtn) navSearchBtn.classList.remove('active');
+    });
+  }
+
+  // 2️⃣ [열기] 왼쪽 사이드바 '검색' 버튼 누르면 다시 나타나기
+  if (navSearchBtn) {
+    navSearchBtn.addEventListener('click', () => {
+      // 검색창이 숨겨져 있다면 열기
+      searchContainer.classList.remove('hidden');
+      
+      // 버튼 활성화 표시 (CSS에 .active 스타일이 있다면)
+      navSearchBtn.classList.add('active');
+      
+      // 입력창에 바로 포커스 주면 사용자 경험 UP
+      const input = document.getElementById('search-input');
+      if (input) input.focus();
+    });
+  }
 }
 
 (function () {
@@ -438,7 +465,7 @@ export async function initSearch(map, clusterer) {
   */
   if (listBtn) listBtn.addEventListener('click', () => toggle(panels.list, true));
   if (guideBtn) guideBtn.addEventListener('click', () => toggle(panels.guide));
-  if (searchBtn) searchBtn.addEventListener('click', closeAllPanels); // 🔍 누르면 닫기
+  /*if (searchBtn) searchBtn.addEventListener('click', closeAllPanels); // 검색창창 누르면 닫기*/
 
   if (closeBtns.list)
     closeBtns.list.addEventListener('click', () => closePanel(panels.list));
