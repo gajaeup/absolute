@@ -580,15 +580,43 @@ export async function initSearch(map, clusterer) {
 
   function showRoadview(lat, lng) {
     const container = document.getElementById('floating-roadview');
+    container.classList.remove('vertical');
     container.classList.remove('hidden');
+    
     container.innerHTML = '';
+    
+    const resizeBtn = document.createElement('button');
+    resizeBtn.className = 'rv-resize-btn';
+    const iconExpand = '/public/down.png';   // 확대 아이콘 (화살표 위로 등)
+    const iconCollapse = '/public/upload.png';
+resizeBtn.innerHTML = `<img src="${iconExpand}" alt="확대">`;
+    const rvContainer = document.createElement('div');
+    rvContainer.style.width = '100%';
+    rvContainer.style.height = '100%';
+    container.appendChild(rvContainer);
+    container.appendChild(resizeBtn);
 
     const pos = new kakao.maps.LatLng(lat, lng);
-    const rv = new kakao.maps.Roadview(container);
+    const rv = new kakao.maps.Roadview(rvContainer);
     const rvc = new kakao.maps.RoadviewClient();
 
     rvc.getNearestPanoId(pos, 50, (panoId) => {
-      if (panoId) rv.setPanoId(panoId, pos);
+      if (panoId) {
+        rv.setPanoId(panoId, pos);
+        resizeBtn.onclick = () => {
+          const isVertical = container.classList.toggle('vertical');
+          if (isVertical) {
+              // 세로로 길어졌을 때 -> '축소' 아이콘으로 변경
+              resizeBtn.innerHTML = `<img src="${iconCollapse}" alt="축소">`;
+          } else {
+              // 작아졌을 때 -> '확대' 아이콘으로 변경
+              resizeBtn.innerHTML = `<img src="${iconExpand}" alt="확대">`;
+          }
+          setTimeout(() => {
+            rv.relayout();
+          }, 50);
+        };
+      }
       else
         container.innerHTML =
           "<p style='padding:25px;text-align:center'>로드뷰 없음</p>";

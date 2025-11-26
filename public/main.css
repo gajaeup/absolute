@@ -461,15 +461,53 @@ main {
     /* 로드뷰 창 높이 */
   background: #fff;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  z-index: 99999;/
+  z-index: 9999;
+  overflow: visible !important;
 }
 
 .hidden {
   display: none !important;
 }
+.roadview-box.vertical {
+  width: 400px !important;
+  /* 너비는 모바일처럼 좁게 */
+  height: 85vh !important;
+  /* 높이는 길게 */
+}
 
+/* 2. 모드 변경 버튼 */
+.rv-resize-btn {
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(-50%);
+  z-index: 99999;
+  /* 로드뷰보다 위에 보여야 함 */
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+    /* 부드러운 효과 추가 */
+}
+.rv-resize-btn img {
+  width: 20px;
+  /* 아이콘 너비 (원하는 크기로 조절) */
+  height: 15px;
+  /* 아이콘 높이 */
+  object-fit: contain;
+  display: block;
+  /* 이미지 하단 여백 제거 */
+}
+
+.rv-resize-btn:hover {
+  background: #f0f0f0;
+}
 /* ---- 목록 패널 ---- */
 .side-panel {
   position: fixed;
