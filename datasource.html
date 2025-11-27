@@ -1,320 +1,332 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="utf-8" />
-    <title>Data Source</title>
-    <link rel="stylesheet" href="./public/main.css" />
-    <style>
-      body {
-        font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #fff;
-        color: #111;
-      }
 
-      /* 상단 영역: 제목 + 네비 */
-      .top-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between; /* ✅ 한 줄 정렬 (좌: 제목 / 우: 메뉴) */
-      }
+<head>
+  <meta charset="utf-8" />
+  <title>Data Source</title>
+  <link rel="stylesheet" href="./public/main.css" />
+  <style>
+    body {
+      font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fff;
+      color: #111;
+    }
 
-      /* nav 메뉴 오른쪽 정렬 */
-      .nav-menu {
-        list-style: none;
-        margin: 100px 180px 0 0;
-        padding: 0;
-        display: flex;
-        gap: 30px;
-      }
+    /* 상단 영역: 제목 + 네비 */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      /* ✅ 한 줄 정렬 (좌: 제목 / 우: 메뉴) */
+    }
 
-      .nav-menu li a {
-        text-decoration: none;
-        color: #bbb;
-        font-weight: 600;
-      }
+    /* nav 메뉴 오른쪽 정렬 */
+    .nav-menu {
+      list-style: none;
+      margin: 100px 180px 0 0;
+      padding: 0;
+      display: flex;
+      gap: 30px;
+    }
 
-      .nav-menu li a:hover {
-        color: #000;
-      }
+    .nav-menu li a {
+      text-decoration: none;
+      color: #bbb;
+      font-weight: 600;
+    }
 
-      .faq-title {
-        font-size: 2.7em;
-        font-weight: 700;
-        margin: 125px 0 60px 150px;
-      }
+    .nav-menu li a:hover {
+      color: #000;
+    }
 
-      .faq-list {
-        max-width: 1200px;
-        margin: 0 auto;
-        border-top: 1px solid #eee;
-      }
+    .faq-title {
+      font-size: 2.7em;
+      font-weight: 700;
+      margin: 125px 0 60px 150px;
+    }
 
-      .faq-list h2 {
-        margin-top: 80px;
-        margin-bottom: 30px;
-        font-size: 26px;
-      }
-      .faq-list li {
-        font-size: 17px;
-        margin-bottom: 40px;
-      }
+    .faq-list {
+      max-width: 1200px;
+      margin: 0 auto;
+      border-top: 1px solid #eee;
+    }
 
-      .faq-list p {
-        font-size: 17px;
-        margin-bottom: 40px;
-      }
+    .faq-list h2 {
+      margin-top: 80px;
+      margin-bottom: 30px;
+      font-size: 26px;
+    }
 
-      details {
-        border-bottom: 1px solid #eee;
-        padding: 33px 0;
-        overflow: hidden; /* 내용이 부드럽게 잘리도록 */
-        transition: all 0.4s ease; /* 전체 전환 부드럽게 */
-      }
+    .faq-list li {
+      font-size: 17px;
+      margin-bottom: 40px;
+    }
 
-      details[open] summary::before {
-        transform: rotate(90deg);
-      }
+    .faq-list p {
+      font-size: 17px;
+      margin-bottom: 40px;
+    }
 
-      details[open] {
-        padding-bottom: 40px; /* 열릴 때 아래 여백 */
-      }
+    details {
+      border-bottom: 1px solid #eee;
+      padding: 33px 0;
+      overflow: hidden;
+      /* 내용이 부드럽게 잘리도록 */
+      transition: all 0.4s ease;
+      /* 전체 전환 부드럽게 */
+    }
 
-      /* 부드러운 펼침 효과 */
-      details > *:not(summary) {
-        opacity: 0;
-        max-height: 0;
-        overflow: hidden;
-        transition: all 0.5s ease;
-      }
+    details[open] summary::before {
+      transform: rotate(90deg);
+    }
 
-      details[open] > *:not(summary) {
-        opacity: 1;
-        max-height: 500px; /* 내용 높이에 맞게 조정 */
-      }
+    details[open] {
+      padding-bottom: 40px;
+      /* 열릴 때 아래 여백 */
+    }
 
-      summary {
-        font-size: 1.4em;
-        font-weight: 600;
-        cursor: pointer;
-        list-style: none;
-        display: flex;
-        align-items: center; /* ← 왼쪽에 아이콘 + 텍스트 한 줄 */
-        gap: 20px;
-      }
+    /* 부드러운 펼침 효과 */
+    details>*:not(summary) {
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.5s ease;
+    }
 
-      /* 크롬/사파리 기본 마커 숨김 */
-      summary::-webkit-details-marker {
-        display: none;
-      }
+    details[open]>*:not(summary) {
+      opacity: 1;
+      max-height: 500px;
+      /* 내용 높이에 맞게 조정 */
+    }
 
-      /* 커스텀 삼각형 아이콘 */
-      summary::before {
-        content: '▶';
-        font-size: 0.9em;
-        transition: transform 0.2s ease;
-      }
-      details[open] summary::before {
-        transform: rotate(90deg); /* 펼치면 ▼처럼 보이게 */
-      }
+    summary {
+      font-size: 1.4em;
+      font-weight: 600;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      /* ← 왼쪽에 아이콘 + 텍스트 한 줄 */
+      gap: 20px;
+    }
 
-      details p {
-        margin-top: 15px;
-        color: #555;
-        line-height: 1.6;
-        font-size: 1.1em;
-      }
+    /* 크롬/사파리 기본 마커 숨김 */
+    summary::-webkit-details-marker {
+      display: none;
+    }
 
-      /* 데이터 출처 테이블 */
-      .data-table {
-        border-collapse: collapse;
-        margin-top: 16px;
-        font-size: 16px;
-        table-layout: fixed; /* 각 열을 균등 분배 */
-        width: 100%;
-      }
+    /* 커스텀 삼각형 아이콘 */
+    summary::before {
+      content: '▶';
+      font-size: 0.9em;
+      transition: transform 0.2s ease;
+    }
 
-      .data-table th,
-      .data-table td {
-        border: 1px solid #333;
-        padding: 10px 18px;
-      }
+    details[open] summary::before {
+      transform: rotate(90deg);
+      /* 펼치면 ▼처럼 보이게 */
+    }
 
-      .data-table th {
-        background-color: #e5e5e5;
-        font-weight: 600;
-        text-align: center;
-      }
+    details p {
+      margin-top: 15px;
+      color: #555;
+      line-height: 1.6;
+      font-size: 1.1em;
+    }
 
-      .data-table th:first-child,
-      .data-table td:first-child {
-        width: 120px; /* 첫 번째 열만 원하는 크기로 고정 */
-        text-align: center;
-      }
+    /* 데이터 출처 테이블 */
+    .data-table {
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: 16px;
+      table-layout: fixed;
+      /* 각 열을 균등 분배 */
+      width: 100%;
+    }
 
-      .faq-list {
-        margin-bottom: 120px; /* FAQ와 footer 간격 띄우기 */
-      }
-    </style>
-  </head>
+    .data-table th,
+    .data-table td {
+      border: 1px solid #333;
+      padding: 10px 18px;
+    }
 
-  <body>
-    <header class="main-header">
-      <div class="logo-container">
-        <a href="main.html" id="app-logo"
-          ><img src="./public/logo.jpg" alt="로고" class="logo-image"
-        /></a>
-      </div>
-      <nav class="info-nav">
-        <ul>
-          <li>
-            <a href="background.html" data-info="background">구현 배경</a>
-          </li>
-          <li><a href="casestudy.html" data-info="cases">실제 사례</a></li>
-          <li><a href="faq.html" data-info="faq">FAQ</a></li>
-          <li><a href="datasource.html" data-info="data">데이터 출처</a></li>
-        </ul>
-      </nav>
-    </header>
+    .data-table th {
+      background-color: #e5e5e5;
+      font-weight: 600;
+      text-align: center;
+    }
 
-    <div class="top-bar">
-      <h1 class="faq-title">데이터 출처</h1>
+    .data-table th:first-child,
+    .data-table td:first-child {
+      width: 120px;
+      /* 첫 번째 열만 원하는 크기로 고정 */
+      text-align: center;
+    }
+
+    .faq-list {
+      margin-bottom: 120px;
+      /* FAQ와 footer 간격 띄우기 */
+    }
+  </style>
+</head>
+
+<body>
+  <header class="main-header">
+    <div class="logo-container">
+      <a href="main.html" id="app-logo"><img src="./public/logo1.png" alt="로고" class="logo-image" /></a>
     </div>
+    <nav class="info-nav">
+      <ul>
+        <li>
+          <a href="background.html" data-info="background">구현 배경</a>
+        </li>
+        <li><a href="casestudy.html" data-info="cases">실제 사례</a></li>
+        <li><a href="faq.html" data-info="faq">FAQ</a></li>
+        <li><a href="datasource.html" data-info="data">데이터 출처</a></li>
+      </ul>
+    </nav>
+  </header>
 
-    <main>
-      <section class="faq-list">
-        <!-- 폐주유소 데이터 -->
-        <details open>
-          <summary>폐주유소 데이터</summary>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>항목</th>
-                <th>폐주유소 데이터</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>출처</td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>링크</td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
-        </details>
+  <div class="top-bar">
+    <h1 class="faq-title">데이터 출처</h1>
+  </div>
 
-        <!-- 입지 분석 지표 -->
-        <details open>
-          <summary>입지 분석 지표</summary>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>항목</th>
-                <th>교통량</th>
-                <th>관광지수</th>
-                <th>상권</th>
-                <th>인구</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>출처</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>링크</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
-        </details>
+  <main>
+    <section class="faq-list">
+      <!-- 폐주유소 데이터 -->
+      <details open>
+        <summary>폐주유소 데이터</summary>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>항목</th>
+              <th>폐주유소 데이터</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>출처</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>링크</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </details>
 
-        <!-- 참고 문헌 -->
-        <details open>
-          <summary>참고 문헌</summary>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>항목</th>
-                <th>내용</th>
-                <th>ㄱㄴㄷ</th>
-                <th>알고리즘</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>출처</td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>링크</td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
-        </details>
+      <!-- 입지 분석 지표 -->
+      <details open>
+        <summary>입지 분석 지표</summary>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>항목</th>
+              <th>교통량</th>
+              <th>관광지수</th>
+              <th>상권</th>
+              <th>인구</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>출처</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>링크</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </details>
 
-        <!-- 이미지, 아이콘 -->
-        <details open>
-          <summary>이미지</summary>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>항목</th>
-                <th>홈픽</th>
-                <th>분더퓨얼</th>
-                <th>기버스테이션</th>
-                <th>하만스빅버거</th>
-                <th>사당셀프주유소</th>
-                <th>슈퍼스테이션</th>
-                <th>아이콘 로고</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>출처</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>링크</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
-        </details>
-      </section>
-    </main>
+      <!-- 참고 문헌 -->
+      <details open>
+        <summary>참고 문헌</summary>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>항목</th>
+              <th>내용</th>
+              <th>ㄱㄴㄷ</th>
+              <th>알고리즘</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>출처</td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>링크</td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </details>
 
-    <footer class="site-footer">
-      <div class="footer-content">
-        <span>Copyright by ABSOLUTE</span>
-      </div>
-    </footer>
-  </body>
+      <!-- 이미지, 아이콘 -->
+      <details open>
+        <summary>이미지</summary>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>항목</th>
+              <th>홈픽</th>
+              <th>분더퓨얼</th>
+              <th>기버스테이션</th>
+              <th>하만스빅버거</th>
+              <th>사당셀프주유소</th>
+              <th>슈퍼스테이션</th>
+              <th>아이콘 로고</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>출처</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>링크</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-content">
+      <span>Copyright by ABSOLUTE</span>
+    </div>
+  </footer>
+</body>
+
 </html>

@@ -1,173 +1,176 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="utf-8" />
-    <title>FAQ</title>
-    <link rel="stylesheet" href="./public/main.css" />
 
-    <style>
-      body {
-        font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #fff;
-        color: #111;
-      }
+<head>
+  <meta charset="utf-8" />
+  <title>FAQ</title>
+  <link rel="stylesheet" href="./public/main.css" />
 
-      /* 상단 영역: 제목 + 네비 */
-      .top-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between; /* ✅ 한 줄 정렬 (좌: 제목 / 우: 메뉴) */
-      }
+  <style>
+    body {
+      font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fff;
+      color: #111;
+    }
 
-      /* nav 메뉴 오른쪽 정렬 */
-      .nav-menu {
-        list-style: none;
-        margin: 100px 180px 0 0;
-        padding: 0;
-        display: flex;
-        gap: 30px;
-      }
+    /* 상단 영역: 제목 + 네비 */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      /* ✅ 한 줄 정렬 (좌: 제목 / 우: 메뉴) */
+    }
 
-      .nav-menu li a {
-        text-decoration: none;
-        color: #bbb;
-        font-weight: 600;
-      }
+    /* nav 메뉴 오른쪽 정렬 */
+    .nav-menu {
+      list-style: none;
+      margin: 100px 180px 0 0;
+      padding: 0;
+      display: flex;
+      gap: 30px;
+    }
 
-      .nav-menu li a:hover {
-        color: #000;
-      }
+    .nav-menu li a {
+      text-decoration: none;
+      color: #bbb;
+      font-weight: 600;
+    }
 
-      .faq-title {
-        font-size: 2.7em;
-        font-weight: 700;
-        margin: 125px 0 60px 150px;
-      }
+    .nav-menu li a:hover {
+      color: #000;
+    }
 
-      .faq-list {
-        max-width: 1200px;
-        margin: 0 auto;
-        border-top: 1px solid #eee;
-      }
+    .faq-title {
+      font-size: 2.7em;
+      font-weight: 700;
+      margin: 125px 0 60px 150px;
+    }
 
-      details {
-        border-bottom: 1px solid #eee;
-        padding: 25px 0;
-        overflow: hidden;
-        transition: all 0.4s ease;
-      }
+    .faq-list {
+      max-width: 1200px;
+      margin: 0 auto;
+      border-top: 1px solid #eee;
+    }
 
-      details > *:not(summary) {
-        opacity: 0;
-        max-height: 0;
-        overflow: hidden;
-        transition: all 0.5s ease;
-      }
+    details {
+      border-bottom: 1px solid #eee;
+      padding: 25px 0;
+      overflow: hidden;
+      transition: all 0.4s ease;
+    }
 
-      details[open] > *:not(summary) {
-        opacity: 1;
-        max-height: 500px; /* 내용 길이에 따라 700px 등으로 조정 가능 */
-      }
+    details>*:not(summary) {
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.5s ease;
+    }
 
-      summary {
-        font-size: 1.4em;
-        font-weight: 600;
-        cursor: pointer;
-        list-style: none;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
+    details[open]>*:not(summary) {
+      opacity: 1;
+      max-height: 500px;
+      /* 내용 길이에 따라 700px 등으로 조정 가능 */
+    }
 
-      summary::after {
-        content: '+';
-        font-size: 1.5em;
-        color: #333;
-        transition: transform 0.3s ease;
-      }
+    summary {
+      font-size: 1.4em;
+      font-weight: 600;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-      details[open] summary::after {
-        transform: rotate(45deg);
-      }
+    summary::after {
+      content: '+';
+      font-size: 1.5em;
+      color: #333;
+      transition: transform 0.3s ease;
+    }
 
-      details p {
-        margin-top: 15px;
-        color: #555;
-        line-height: 1.6;
-        font-size: 1.1em;
-      }
+    details[open] summary::after {
+      transform: rotate(45deg);
+    }
 
-      .faq-list {
-        margin-bottom: 220px; /* FAQ와 footer 간격 띄우기 */
-      }
-    </style>
-  </head>
+    details p {
+      margin-top: 15px;
+      color: #555;
+      line-height: 1.6;
+      font-size: 1.1em;
+    }
 
-  <body>
-    <header class="main-header">
-      <div class="logo-container">
-        <a href="main.html" id="app-logo"
-          ><img src="./public/logo.jpg" alt="로고" class="logo-image"
-        /></a>
-      </div>
-      <nav class="info-nav">
-        <ul>
-          <li>
-            <a href="background.html" data-info="background">구현 배경</a>
-          </li>
-          <li><a href="casestudy.html" data-info="cases">실제 사례</a></li>
-          <li><a href="faq.html" data-info="faq">FAQ</a></li>
-          <li><a href="datasource.html" data-info="data">데이터 출처</a></li>
-        </ul>
-      </nav>
-    </header>
+    .faq-list {
+      margin-bottom: 220px;
+      /* FAQ와 footer 간격 띄우기 */
+    }
+  </style>
+</head>
 
-    <div class="top-bar">
-      <h1 class="faq-title">자주 묻는 질문</h1>
-      <nav class="nav-bar">
-        <ul class="nav-menu">
-          <li><a href="faq.html">전체</a></li>
-          <li><a href="faq1.html">서비스 이용</a></li>
-          <li><a href="faq2.html">데이터 및 알고리즘</a></li>
-          <li><a href="faq3.html">기술 지원</a></li>
-        </ul>
-      </nav>
+<body>
+  <header class="main-header">
+    <div class="logo-container">
+      <a href="main.html" id="app-logo"><img src="./public/logo1.png" alt="로고" class="logo-image" /></a>
     </div>
+    <nav class="info-nav">
+      <ul>
+        <li>
+          <a href="background.html" data-info="background">구현 배경</a>
+        </li>
+        <li><a href="casestudy.html" data-info="cases">실제 사례</a></li>
+        <li><a href="faq.html" data-info="faq">FAQ</a></li>
+        <li><a href="datasource.html" data-info="data">데이터 출처</a></li>
+      </ul>
+    </nav>
+  </header>
 
-    <main>
-      <section class="faq-list">
-        <details>
-          <summary>폐주유소 활용방안은 어떤 기준으로 제시되나요?</summary>
-          <p>
-            교통량, 인구밀도, 관광지수, 상권밀집도 등 지역별 공공데이터를 종합
-            분석하여 가장 적합한 활용방안을 추천합니다. (예: EV충전소, 주차장,
-            로컬푸드 매장 등)
-          </p>
-        </details>
+  <div class="top-bar">
+    <h1 class="faq-title">자주 묻는 질문</h1>
+    <nav class="nav-bar">
+      <ul class="nav-menu">
+        <li><a href="faq.html">전체</a></li>
+        <li><a href="faq1.html">서비스 이용</a></li>
+        <li><a href="faq2.html">데이터 및 알고리즘</a></li>
+        <li><a href="faq3.html">기술 지원</a></li>
+      </ul>
+    </nav>
+  </div>
 
-        <details>
-          <summary>활용방안은 인공지능이 자동으로 결정하나요?</summary>
-          <p>
-            사이트는 GIS 기반 데이터와 분석 알고리즘을 통해 후보 방안을
-            도출합니다.
-          </p>
-        </details>
+  <main>
+    <section class="faq-list">
+      <details>
+        <summary>폐주유소 활용방안은 어떤 기준으로 제시되나요?</summary>
+        <p>
+          교통량, 인구밀도, 관광지수, 상권밀집도 등 지역별 공공데이터를 종합
+          분석하여 가장 적합한 활용방안을 추천합니다. (예: EV충전소, 주차장,
+          로컬푸드 매장 등)
+        </p>
+      </details>
 
-        <details>
-          <summary>데이터는 어디서 가져오나요?</summary>
-          <p>
-            국토교통부, 공공데이터포털, 지자체 데이터 등 공식 자료를 사용합니다.
-          </p>
-        </details>
-      </section>
-    </main>
+      <details>
+        <summary>활용방안은 인공지능이 자동으로 결정하나요?</summary>
+        <p>
+          사이트는 GIS 기반 데이터와 분석 알고리즘을 통해 후보 방안을
+          도출합니다.
+        </p>
+      </details>
 
-    <footer class="site-footer">
-      <div class="footer-content">
-        <span>Copyright by ABSOLUTE</span>
-      </div>
-    </footer>
-  </body>
+      <details>
+        <summary>데이터는 어디서 가져오나요?</summary>
+        <p>
+          국토교통부, 공공데이터포털, 지자체 데이터 등 공식 자료를 사용합니다.
+        </p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-content">
+      <span>Copyright by ABSOLUTE</span>
+    </div>
+  </footer>
+</body>
+
 </html>
