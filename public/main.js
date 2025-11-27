@@ -1476,3 +1476,15 @@ document.getElementById("btn-ev")?.addEventListener("click", async () => {
   console.log(`🔌 EV 충전소 ${data.count || data.items?.length || 0}개 표시됨`);
 });
 
+// =============================
+// 버튼 선택 이벤트 핸들러
+// =============================
+
+const buttons = document.querySelectorAll('.dash-btn');
+
+buttons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    buttons.forEach(b => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+  });
+});
