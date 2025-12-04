@@ -725,13 +725,45 @@ main {
   background-color: #1d4ed8;
   /* 호버 시 좀 더 진하게 */
 }
+.station-usage-section {
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  background-color: #f0f5fb;
+  padding: 10px;
+  
+}
+.station-usage-title {
+  margin: 0 0 6px 0;
+  font-size: 19px;
+  font-weight: 600;
+  color: #111;
+}
 
+.station-usage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.station-usage-1_rank_item {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  color: #0c18fa;
+  line-height: 1.6;
+  font-weight: 500;
+}
+.station-usage-item {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  color: #252525;
+  line-height: 1.6;
+  font-weight: 500;
+}
 
 /* 주유소 상세 카드 섹션 */
 .station-detail__section {
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid #e5e5e5;
+  /*border-top: 1px solid #e5e5e5;*/
 }
 
 .station-detail__section-title {

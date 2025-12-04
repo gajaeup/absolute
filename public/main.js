@@ -541,7 +541,15 @@ export async function initSearch(map, clusterer) {
         <!-- 기본 정보 -->
         <p class="station-detail__name">주유소명 : ${station.name}</p>
         <p class="station-detail__addr">주소 : ${station.addr}</p>
-        <p class="station-detail__status">상태 : ${station.status} (${station.year} ~ )</p>\
+        <p class="station-detail__status">상태 : ${station.status} (${station.year} ~ )</p>
+        <section class="station-usage-section">
+          <h3 class="station-usage-title">추천 활용방안</h3>
+          <ul class="station-usage-list">
+            <li class="station-usage-1_rank_item">1순위 : ${recData.recommend1}</li>
+            <li class="station-usage-item">2순위 : ${recData.recommend2}</li>
+            <li class="station-usage-item">3순위 : ${recData.recommend3}</li>
+          </ul>
+        </section>
         <!-- 지표 그래프 칸 (나중에 차트/지표값 들어갈 자리) -->
         <section class="station-detail__section">
           <h3 class="station-detail__section-title">지표 요약</h3>
@@ -566,19 +574,7 @@ export async function initSearch(map, clusterer) {
           </div>
         </section>
         <!-- 활용방안 소개 칸 -->
-        <section class="station-detail__section">
-          <h3 class="station-detail__section-title">추천 활용방안</h3>
-          <p class="station-detail__section-body" id="station-recommendation">
-            ${
-              recData
-                ? `
-                ① ${recData.recommend1}<br>
-                ② ${recData.recommend2}<br>
-                ③ ${recData.recommend3}`
-                : '추천 데이터가 없습니다.'
-            }
-          </p>
-        </section>
+        
                 <div style="margin-top: 15px; text-align: center;">
              <a href="https://api.restation.site/api/stations/${stationId}/report" 
                 target="_blank" 
