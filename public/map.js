@@ -61,9 +61,9 @@ export function drawMarkers(map, clusterer, stations) {
     const color = /폐업|휴업/.test(status) ? '#ff5a5f' : '#ffb74d';
 
     // 🔹 이미지 URL
-    const imgUrl = `https://absolute-s3-bucket.s3.ap-southeast-2.amazonaws.com/stations/${encodeURIComponent(
-      addr
-    )}.jpg`;
+    const fileNameRaw = station['주소'] || station['정제주소'] || addr || '';
+    const fileName = fileNameRaw.trim();  // 혹시 모를 양끝 공백 제거
+    const imgUrl = `https://absolute-s3-bucket.s3.ap-southeast-2.amazonaws.com/stations/${encodeURIComponent(fileName)}.jpg`;
 
     // 🔹 오버레이에 쓸 DOM 요소 직접 생성
     const iwEl = document.createElement('div');
