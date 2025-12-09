@@ -35,7 +35,7 @@ async function loadKakaoSDK() {
 
   // 환경에 따라 다른 키 사용 (원하면 둘 다 같은 키여도 됨)
   if (isLocal) {
-    apiKey = '65e1c8f1ab7fa043334d2b12c4bde905';
+    apiKey = '';
   } else {
     const res = await fetch('/api/kakao');
     const data = await res.json();
@@ -1484,3 +1484,4 @@ buttons.forEach(btn => {
     btn.classList.add('is-active');
   });
 });
+
