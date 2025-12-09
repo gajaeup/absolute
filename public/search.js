@@ -129,16 +129,53 @@ function loadSigungu(sido, select, geoData) {
 function loadEmd(sido, sig, select, geoData) {
   select.innerHTML = `<option value=""> 읍/면/동 선택 </option>`;
 
-  const prefix = `${sido} ${sig}`;
+  const codeMap = {
+    서울특별시:"11", 부산광역시:"26", 대구광역시:"27", 인천광역시:"28",
+    광주광역시:"29", 대전광역시:"30", 울산광역시:"31", 세종특별자치시:"36",
+    경기도:"41", 강원특별자치도:"51", 충청북도:"43", 충청남도:"44",
+    전북특별자치도:"52", 전라남도:"46", 경상북도:"47", 경상남도:"48",
+    제주특별자치도:"50"
+  };
 
-  geoData.emd.features
-    .filter(f => f.properties.adm_nm.startsWith(prefix))
-    .forEach(f => {
-      select.add(new Option(
-        f.properties.adm_nm.split(" ").pop(),
-        f.properties.adm_nm
-      ));
-    });
+  const sidoCode = codeMap[sido];
+  if (!sidoCode) {
+      console.error(`시도 코드를 찾을 수 없습니다: ${sido}`);
+      return;
+    }
+
+  // 2️⃣ 선택한 '시군구'의 전체 코드 찾기 (예: 전주시 덕진구 -> 52113)
+  // geoData.sig 데이터에서 [이름이 같고] + [시도 코드로 시작하는] 것을 찾음
+  const targetSigFeature = geoData.sig.features.find(f => {
+    // 💡 팁: 데이터에는 "전주시덕진구"(공백없음)일 수 있고, 선택값은 "전주시 덕진구"(공백있음)일 수 있음
+    // 안전하게 공백을 모두 제거하고 비교
+    const dataName = (f.properties.SIG_KOR_NM || "").replace(/\s+/g, '');
+    const selectedName = sig.replace(/\s+/g, '');
+
+    return dataName === selectedName && f.properties.SIG_CD.startsWith(sidoCode);
+  });
+
+  if (!targetSigFeature) {
+    console.log("일치하는 시군구 데이터를 찾지 못했습니다.");
+    return;
+  }
+
+  // 찾은 시군구 코드 (예: "52113")
+  const targetSggCode = targetSigFeature.properties.SIG_CD;
+
+  // 3️⃣ 읍면동 필터링 (sgg 속성이 52113인 것만 가져오기)
+  const filteredEmd = geoData.emd.features.filter(f => {
+    // 보여주신 데이터 구조: { properties: { sgg: "52113", ... } }
+    return f.properties.sgg === targetSggCode;
+  });
+
+  // 4️⃣ 옵션 추가
+  filteredEmd.forEach(f => {
+    // 이름 추출: "전북특별자치도 전주시덕진구 진북동" -> "진북동"
+    // adm_nm을 공백으로 자르고 맨 뒤에꺼 가져오기
+    let displayName = f.properties.adm_nm.split(" ").pop();
+    
+    select.add(new Option(displayName, f.properties.adm_nm));
+  });
 }
 
 /* =========================
